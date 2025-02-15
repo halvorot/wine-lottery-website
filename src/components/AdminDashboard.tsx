@@ -2,9 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Timer, Trophy, Users, Lock, Unlock } from "lucide-react";
 import { AddPrizeForm } from "@/components/AddPrizeForm";
+import { PrizesTable } from "@/components/admin/PrizesTable";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 type LotteryStatus = {
   id: string;
@@ -14,16 +16,22 @@ type LotteryStatus = {
   created_at: string;
 }
 
+type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortDirection = "asc" | "desc";
+
 export const AdminDashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [page, setPage] = useState(1);
+  const entriesPerPage = 10;
 
   const { data: lotteryStatus, isLoading: isStatusLoading } = useQuery({
     queryKey: ["lottery-status"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
       
-      // First try to get existing status
       const { data: existingStatus, error: fetchError } = await supabase
         .from("lottery_status")
         .select("*")
@@ -32,7 +40,6 @@ export const AdminDashboard = () => {
       
       if (fetchError) throw fetchError;
       
-      // If no status exists, create one
       if (!existingStatus) {
         const { data: newStatus, error: createError } = await supabase
           .from("lottery_status")
@@ -65,6 +72,42 @@ export const AdminDashboard = () => {
       return data || [];
     },
   });
+
+  const { data: prizes, isLoading: isPrizesLoading } = useQuery({
+    queryKey: ["prizes", sortColumn, sortDirection, page],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prizes")
+        .select("*", { count: "exact" })
+        .order(sortColumn, { ascending: sortDirection === "asc" })
+        .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: totalPrizes } = useQuery({
+    queryKey: ["prizes-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("prizes")
+        .select("*", { count: "exact", head: true });
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
 
   const toggleLockMutation = useMutation({
     mutationFn: async () => {
@@ -148,7 +191,7 @@ export const AdminDashboard = () => {
         <div className="bg-cream rounded-lg p-6">
           <Trophy className="mb-2" />
           <h3 className="text-xl font-semibold">Total Prizes</h3>
-          <p className="text-2xl font-bold">3</p>
+          <p className="text-2xl font-bold">{totalPrizes || 0}</p>
         </div>
       </div>
 
@@ -158,7 +201,21 @@ export const AdminDashboard = () => {
           <AddPrizeForm />
         </div>
 
+        {!isPrizesLoading && prizes && (
+          <PrizesTable
+            prizes={prizes}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            page={page}
+            totalCount={totalPrizes || 0}
+            entriesPerPage={entriesPerPage}
+            onPageChange={setPage}
+          />
+        )}
+
         <div className="overflow-x-auto">
+          <h3 className="text-xl font-semibold mb-4">Today's Entries</h3>
           <table className="w-full">
             <thead>
               <tr className="border-b">
