@@ -109,7 +109,7 @@ export function EntryForm({
         type="submit"
         disabled={isSubmitting || (existingEntry && !hasChanges)}
         variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
-        className="w-full hover:bg-wine-light text-white"
+        className="w-full bg-wine hover:bg-wine-light text-white"
       >
         {isSubmitting
           ? "Submitting..."
