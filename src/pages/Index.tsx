@@ -5,22 +5,9 @@ import { LiveDrawTab } from "@/components/LiveDrawTab";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { PasswordVerificationModal } from "@/components/PasswordVerificationModal";
 import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 const Index = () => {
   const { isVerified, setVerified } = usePasswordVerification();
-  const location = useLocation();
-
-  useEffect(() => {
-    // Only show password verification if not redirected from logout
-    const params = new URLSearchParams(location.search);
-    const fromLogout = params.get('fromLogout') === 'true';
-    
-    if (!isVerified && !fromLogout) {
-      setVerified(false);
-    }
-  }, [isVerified, location, setVerified]);
 
   const handleVerified = () => {
     setVerified(true);

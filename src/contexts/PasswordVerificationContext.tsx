@@ -23,6 +23,15 @@ export function PasswordVerificationProvider({
 
   const checkVerification = async () => {
     try {
+      // Check URL parameters for logout state
+      const params = new URLSearchParams(window.location.search);
+      const fromLogout = params.get('fromLogout') === 'true';
+      
+      if (fromLogout) {
+        setIsVerified(true);
+        return;
+      }
+
       const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("password_verifications")
