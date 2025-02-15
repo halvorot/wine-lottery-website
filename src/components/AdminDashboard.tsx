@@ -14,30 +14,34 @@ export const AdminDashboard = () => {
     queryKey: ["lottery-status"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
+      
+      // Use upsert to either get or create the status
       const { data, error } = await supabase
         .from("lottery_status")
-        .select("*")
+        .upsert(
+          { date: today, is_locked: false },
+          { 
+            onConflict: 'date',
+            ignoreDuplicates: true 
+          }
+        )
         .eq("date", today)
-        .single();
-
-      // If no status exists for today, create one
-      if (error?.code === "PGRST116") {
-        const { data: newStatus, error: createError } = await supabase
-          .from("lottery_status")
-          .insert([
-            {
-              date: today,
-              is_locked: false,
-            },
-          ])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        return newStatus;
-      }
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        // If no data returned, fetch it again
+        const { data: existingStatus, error: fetchError } = await supabase
+          .from("lottery_status")
+          .select("*")
+          .eq("date", today)
+          .maybeSingle();
+          
+        if (fetchError) throw fetchError;
+        return existingStatus;
+      }
+      
       return data;
     },
   });
@@ -60,20 +64,27 @@ export const AdminDashboard = () => {
       const today = new Date().toISOString().split("T")[0];
       const newLockedStatus = !lotteryStatus?.is_locked;
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("lottery_status")
-        .upsert({
-          date: today,
-          is_locked: newLockedStatus,
-          locked_at: newLockedStatus ? new Date().toISOString() : null,
-        })
-        .eq("date", today);
+        .upsert(
+          {
+            date: today,
+            is_locked: newLockedStatus,
+            locked_at: newLockedStatus ? new Date().toISOString() : null,
+          },
+          { 
+            onConflict: 'date',
+            ignoreDuplicates: false // We want to update if exists
+          }
+        )
+        .select()
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
       
-      return newLockedStatus;
+      return data?.is_locked ?? newLockedStatus;
     },
     onSuccess: (newLockedStatus) => {
       queryClient.invalidateQueries({ queryKey: ["lottery-status"] });
