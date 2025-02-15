@@ -29,19 +29,6 @@ export const AdminDashboard = () => {
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
 
-  // Check for valid session when component mounts
-  useEffect(() => {
-    const validateSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session) {
-        console.error("Session validation error:", error);
-        handleLogout();
-      }
-    };
-
-    validateSession();
-  }, []); // Run only when component mounts
-
   const { prizes, isPrizesLoading, totalPrizes } = useAdminPrizes(
     sortColumn,
     sortDirection,
@@ -61,12 +48,22 @@ export const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
+      // First check if we have a session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session exists, just reload the page to clear any state
+        window.location.reload();
+        return;
+      }
+
+      // If we have a session, try to sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
-        // If we get a session_not_found error, we can consider the user logged out
+        // If the error is session_not_found, just reload
         if (error.message.includes("session_not_found")) {
-          window.location.reload(); // Force a refresh to clear any remaining state
+          window.location.reload();
           return;
         }
         toast({
@@ -74,6 +71,9 @@ export const AdminDashboard = () => {
           description: "Failed to log out. Please try again.",
           variant: "destructive",
         });
+      } else {
+        // Successful logout, reload the page
+        window.location.reload();
       }
     } catch (error) {
       console.error("Logout error:", error);
