@@ -39,11 +39,12 @@ export const AdminDashboard = () => {
 
   const toggleLockMutation = useMutation({
     mutationFn: async () => {
+      const newLockedStatus = !lotteryStatus?.is_locked;
       const { error } = await supabase
         .from("lottery_status")
         .update({
-          is_locked: !lotteryStatus?.is_locked,
-          locked_at: !lotteryStatus?.is_locked ? new Date().toISOString() : null,
+          is_locked: newLockedStatus,
+          locked_at: newLockedStatus ? new Date().toISOString() : null,
         })
         .eq("date", new Date().toISOString().split("T")[0]);
 
@@ -51,10 +52,11 @@ export const AdminDashboard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lottery-status"] });
+      queryClient.invalidateQueries({ queryKey: ["today-entries"] });
       toast({
         title: "Success",
         description: `Lottery ${
-          lotteryStatus?.is_locked ? "unlocked" : "locked"
+          !lotteryStatus?.is_locked ? "locked" : "unlocked"
         } successfully!`,
       });
     },
@@ -149,4 +151,4 @@ export const AdminDashboard = () => {
       </div>
     </div>
   );
-}
+};
