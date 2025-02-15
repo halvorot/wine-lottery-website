@@ -8,14 +8,19 @@ import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { PasswordVerificationProvider, usePasswordVerification } from "./contexts/PasswordVerificationContext";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isVerified } = usePasswordVerification();
+const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isAdmin } = useAuthStatus();
   
-  if (!isVerified) {
+  if (!isAuthenticated) {
     return <Navigate to="/admin" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -24,15 +29,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/admin" element={<Admin />} />
       <Route 
-        path="/" 
+        path="/admin" 
         element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
+          <ProtectedAdminRoute>
+            <Admin />
+          </ProtectedAdminRoute>
         } 
       />
+      <Route path="/" element={<Index />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
