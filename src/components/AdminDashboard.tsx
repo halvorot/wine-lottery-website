@@ -30,6 +30,7 @@ export const AdminDashboard = () => {
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
   const [session, setSession] = useState<any>(null);
+  const [showAdminError, setShowAdminError] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,7 +46,7 @@ export const AdminDashboard = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const { data: isAdmin } = useQuery({
+  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
     queryKey: ["is-admin"],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("is_admin");
@@ -53,22 +54,37 @@ export const AdminDashboard = () => {
       return data;
     },
     enabled: !!session,
+    retry: false,
   });
+
+  useEffect(() => {
+    // Only show the error toast once when we confirm the user is not an admin
+    if (session && !isAdminLoading && !isAdmin && !showAdminError) {
+      setShowAdminError(true);
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this section.",
+        variant: "destructive",
+      });
+    }
+  }, [session, isAdmin, isAdminLoading, toast, showAdminError]);
 
   // If not authenticated, show the Auth component
   if (!session) {
     return <Auth />;
   }
 
-  // If authenticated but not admin, show access denied
-  if (session && !isAdmin) {
-    toast({
-      title: "Access Denied",
-      description: "You need admin privileges to access this section.",
-      variant: "destructive",
-    });
-    navigate("/");
-    return null;
+  // If authenticated but not admin, show access denied message instead of redirecting
+  if (session && !isAdminLoading && !isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
+        <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+        <p className="text-gray-600 mb-4">You need admin privileges to access this section.</p>
+        <Button variant="outline" onClick={() => navigate("/")}>
+          Return to Home
+        </Button>
+      </div>
+    );
   }
 
   const handleLogout = async () => {
