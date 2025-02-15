@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,6 +118,13 @@ export function LotteryEntryForm() {
       email: string;
       num_tickets: number;
     }) => {
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user?.id;
+
+      if (!userId) {
+        throw new Error("No authenticated user found");
+      }
+
       if (existingEntry) {
         // Update existing entry
         const { error } = await supabase
@@ -136,6 +142,7 @@ export function LotteryEntryForm() {
             name: entry.name,
             email: entry.email,
             num_tickets: entry.num_tickets,
+            created_by: userId,
           },
         ]);
         if (error) throw error;
