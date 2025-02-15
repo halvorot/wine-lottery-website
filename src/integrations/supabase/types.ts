@@ -9,7 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_passwords: {
+        Row: {
+          created_at: string
+          id: string
+          password: string
+          valid_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password: string
+          valid_date?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password?: string
+          valid_date?: string
+        }
+        Relationships: []
+      }
+      lottery_entries: {
+        Row: {
+          created_at: string
+          drawn: boolean | null
+          email: string | null
+          entry_date: string
+          id: string
+          name: string
+          num_tickets: number
+        }
+        Insert: {
+          created_at?: string
+          drawn?: boolean | null
+          email?: string | null
+          entry_date?: string
+          id?: string
+          name: string
+          num_tickets: number
+        }
+        Update: {
+          created_at?: string
+          drawn?: boolean | null
+          email?: string | null
+          entry_date?: string
+          id?: string
+          name?: string
+          num_tickets?: number
+        }
+        Relationships: []
+      }
+      lottery_winners: {
+        Row: {
+          created_at: string
+          draw_date: string
+          entry_id: string
+          id: string
+          prize_description: string
+        }
+        Insert: {
+          created_at?: string
+          draw_date?: string
+          entry_id: string
+          id?: string
+          prize_description: string
+        }
+        Update: {
+          created_at?: string
+          draw_date?: string
+          entry_id?: string
+          id?: string
+          prize_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_winners_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "lottery_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
