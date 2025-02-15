@@ -51,13 +51,14 @@ export const LiveDrawTab = () => {
     const today = new Date().toISOString().split("T")[0];
     
     // Get all entries for today
-    const { data: entries } = await supabase
+    const { data: entries, error: entriesError } = await supabase
       .from("lottery_entries")
-      .select<'*', LotteryEntry>('*')
+      .select()
       .eq("draw_date", today)
-      .eq("drawn", false);
+      .eq("drawn", false)
+      .returns<LotteryEntry[]>();
 
-    if (!entries || entries.length === 0) {
+    if (entriesError || !entries || entries.length === 0) {
       toast({
         title: "No entries",
         description: "There are no entries for today's draw",
@@ -69,9 +70,10 @@ export const LiveDrawTab = () => {
     // Get available prizes for today
     const { data: availablePrizes, error: prizesError } = await supabase
       .from("prizes")
-      .select<'*', Prize>('*')
+      .select()
       .eq("draw_date", today)
-      .gt("remaining_quantity", 0);
+      .gt("remaining_quantity", 0)
+      .returns<Prize[]>();
 
     if (prizesError || !availablePrizes || availablePrizes.length === 0) {
       toast({
