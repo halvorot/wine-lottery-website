@@ -10,6 +10,7 @@ import { AdminHeader } from "./admin/AdminHeader";
 import { AdminStats } from "./admin/AdminStats";
 import { PrizesSection } from "./admin/PrizesSection";
 import { EntriesSection } from "./admin/EntriesSection";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 type LotteryStatus = {
   id: string;
@@ -30,36 +31,11 @@ export const AdminDashboard = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
-  const [session, setSession] = useState<any>(null);
+  const { isAuthenticated, isAdmin } = useAuthStatus();
   const [showAdminError, setShowAdminError] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
-    queryKey: ["is-admin"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("is_admin");
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session,
-    retry: false,
-  });
-
-  useEffect(() => {
-    if (session && !isAdminLoading && !isAdmin && !showAdminError) {
+    if (isAuthenticated && !isAdmin && !showAdminError) {
       setShowAdminError(true);
       toast({
         title: "Access Denied",
@@ -67,7 +43,7 @@ export const AdminDashboard = () => {
         variant: "destructive",
       });
     }
-  }, [session, isAdmin, isAdminLoading, toast, showAdminError]);
+  }, [isAuthenticated, isAdmin, toast, showAdminError]);
 
   const { data: lotteryStatus, isLoading: isStatusLoading } = useQuery({
     queryKey: ["lottery-status"],
@@ -189,11 +165,11 @@ export const AdminDashboard = () => {
     navigate("/auth");
   };
 
-  if (!session) {
+  if (!isAuthenticated) {
     return <Auth />;
   }
 
-  if (session && !isAdminLoading && !isAdmin) {
+  if (isAuthenticated && !isAdmin) {
     return (
       <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
         <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
