@@ -13,6 +13,7 @@ export function useAdminPrizes(
   entriesPerPage: number
 ) {
   const queryClient = useQueryClient();
+  const today = new Date().toISOString().split('T')[0];
 
   // Set up real-time subscription
   useEffect(() => {
@@ -23,12 +24,17 @@ export function useAdminPrizes(
         {
           event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
-          table: 'prizes'
+          table: 'prizes',
+          filter: `draw_date=eq.${today}`
         },
         () => {
           // Invalidate and refetch queries when changes occur
-          queryClient.invalidateQueries({ queryKey: ["prizes"] });
-          queryClient.invalidateQueries({ queryKey: ["prizes-count"] });
+          queryClient.invalidateQueries({ 
+            queryKey: ["prizes", sortColumn, sortDirection, page]
+          });
+          queryClient.invalidateQueries({ 
+            queryKey: ["prizes-count"]
+          });
         }
       )
       .subscribe();
@@ -36,12 +42,11 @@ export function useAdminPrizes(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, sortColumn, sortDirection, page, today]);
 
   const { data: prizes, isLoading: isPrizesLoading } = useQuery({
     queryKey: ["prizes", sortColumn, sortDirection, page],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
         .from("prizes")
         .select("*", { count: "exact" })
@@ -57,7 +62,6 @@ export function useAdminPrizes(
   const { data: totalPrizes } = useQuery({
     queryKey: ["prizes-count"],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
       const { count, error } = await supabase
         .from("prizes")
         .select("*", { count: "exact", head: true })
