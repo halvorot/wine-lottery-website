@@ -6,14 +6,28 @@ export function useLotteryStatus() {
   const { data: lotteryStatus } = useQuery({
     queryKey: ["lottery-status"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const today = new Date().toISOString().split("T")[0];
+      
+      const { data: existingStatus, error: fetchError } = await supabase
         .from("lottery_status")
         .select("*")
-        .eq("date", new Date().toISOString().split("T")[0])
-        .single();
-
-      if (error) throw error;
-      return data;
+        .eq("date", today)
+        .maybeSingle();
+      
+      if (fetchError) throw fetchError;
+      
+      if (!existingStatus) {
+        const { data: newStatus, error: createError } = await supabase
+          .from("lottery_status")
+          .insert([{ date: today, is_locked: false }])
+          .select()
+          .single();
+          
+        if (createError) throw createError;
+        return newStatus;
+      }
+      
+      return existingStatus;
     },
   });
 
