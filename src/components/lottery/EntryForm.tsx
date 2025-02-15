@@ -97,7 +97,7 @@ export function EntryForm({
           id="tickets"
           type="number"
           min="0"
-          max="10"
+          max="100"
           value={numTickets}
           onChange={(e) => setNumTickets(parseInt(e.target.value, 10))}
           required
@@ -107,7 +107,7 @@ export function EntryForm({
 
       <Button
         type="submit"
-        disabled={isSubmitting || (existingEntry && !hasChanges)}
+        disabled={isSubmitting || (existingEntry && !hasChanges) || (!existingEntry && numTickets === 0)}
         variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
         className="w-full bg-wine hover:bg-wine-light text-white"
       >
