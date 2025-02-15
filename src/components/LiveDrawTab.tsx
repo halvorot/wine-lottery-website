@@ -1,4 +1,3 @@
-
 import { Trophy } from "lucide-react";
 import { LiveTicker } from "./LiveTicker";
 import { useQuery } from "@tanstack/react-query";
@@ -141,6 +140,14 @@ export const LiveDrawTab = () => {
     });
   };
 
+  const getBadgeVariant = (remaining: number, total: number) => {
+    if (remaining === 0) return "destructive";
+    const percentage = (remaining / total) * 100;
+    if (percentage > 50) return "secondary"; // Soft green for plenty remaining
+    if (percentage > 20) return "outline"; // Orange-ish for medium amount
+    return "default"; // Red-ish for low amount
+  };
+
   return (
     <div className="space-y-8">
       <WinnerAnnouncement winner={lastWinner} />
@@ -170,8 +177,11 @@ export const LiveDrawTab = () => {
                   )}
                 >
                   <Badge 
-                    variant={prize.remaining_quantity > 0 ? "secondary" : "destructive"}
-                    className="absolute -top-2 -right-2"
+                    variant={getBadgeVariant(prize.remaining_quantity, prize.quantity)}
+                    className={cn(
+                      "absolute -top-2 -right-2 rounded-full px-3 py-1 font-semibold",
+                      prize.remaining_quantity === 0 ? "animate-pulse" : ""
+                    )}
                   >
                     {prize.remaining_quantity} left
                   </Badge>
