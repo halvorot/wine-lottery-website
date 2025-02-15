@@ -24,6 +24,15 @@ export function EntryForm({
   const [numTickets, setNumTickets] = useState(existingEntry?.num_tickets || 1);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Update form fields when existingEntry changes
+  useEffect(() => {
+    if (existingEntry) {
+      setName(existingEntry.name);
+      setEmail(existingEntry.email);
+      setNumTickets(existingEntry.num_tickets);
+    }
+  }, [existingEntry]);
+
   useEffect(() => {
     if (existingEntry) {
       const isChanged = 
