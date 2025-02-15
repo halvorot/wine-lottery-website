@@ -141,14 +141,6 @@ export const LiveDrawTab = () => {
     });
   };
 
-  const getBadgeVariant = (remaining: number, total: number) => {
-    if (remaining === 0) return "destructive";
-    const percentage = (remaining / total) * 100;
-    if (percentage > 50) return "secondary"; // Soft green for plenty remaining
-    if (percentage > 20) return "outline"; // Orange-ish for medium amount
-    return "default"; // Red-ish for low amount
-  };
-
   return (
     <div className="space-y-8">
       <WinnerAnnouncement winner={lastWinner} />
@@ -178,13 +170,10 @@ export const LiveDrawTab = () => {
                   )}
                 >
                   <Badge 
-                    variant={getBadgeVariant(prize.remaining_quantity, prize.quantity)}
-                    className={cn(
-                      "absolute -top-2 -right-2 min-w-[1.8rem] h-[1.8rem] flex items-center justify-center rounded-full px-1.5 text-xs font-bold shadow-sm",
-                      prize.remaining_quantity === 0 ? "animate-pulse" : ""
-                    )}
+                    variant={prize.remaining_quantity > 0 ? "secondary" : "destructive"}
+                    className="absolute -top-2 -right-2"
                   >
-                    {prize.remaining_quantity}
+                    {prize.remaining_quantity} left
                   </Badge>
                   <h3 className="text-xl font-semibold mb-2">
                     {index === 0
