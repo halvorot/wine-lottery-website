@@ -26,7 +26,11 @@ export function EntryForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, email, numTickets });
+    onSubmit({ 
+      name, 
+      email, 
+      num_tickets: numTickets // Changed from numTickets to num_tickets to match the type
+    });
   };
 
   return (
