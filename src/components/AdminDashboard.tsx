@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Auth from "@/pages/Auth";
+import { Input } from "@/components/ui/input";
 import { AdminHeader } from "./admin/AdminHeader";
 import { AdminStats } from "./admin/AdminStats";
 import { PrizesSection } from "./admin/PrizesSection";
@@ -29,6 +29,10 @@ export const AdminDashboard = () => {
     todayEntries: entries,
     totalCount: entriesCount,
   } = useLotteryEntries();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -120,13 +124,77 @@ export const AdminDashboard = () => {
     setPage(1);
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setPassword("");
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
   };
 
   if (!isAuthenticated) {
-    return <Auth />;
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full"
+            onClick={() => navigate("/")}
+          >
+            Back to Home
+          </Button>
+        </form>
+      </div>
+    );
   }
 
   if (isAuthenticated && !isAdmin) {
@@ -134,9 +202,14 @@ export const AdminDashboard = () => {
       <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
         <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
         <p className="text-gray-600 mb-4">You need admin privileges to access this section.</p>
-        <Button variant="outline" onClick={() => navigate("/")}>
-          Return to Home
-        </Button>
+        <div className="space-x-4">
+          <Button variant="outline" onClick={() => navigate("/")}>
+            Return to Home
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
+          </Button>
+        </div>
       </div>
     );
   }
