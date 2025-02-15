@@ -5,28 +5,32 @@ import { LiveDrawTab } from "@/components/LiveDrawTab";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { PasswordVerificationModal } from "@/components/PasswordVerificationModal";
 import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const Index = () => {
   const { isVerified, setVerified } = usePasswordVerification();
-  const [showModal, setShowModal] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
-    if (!isVerified) {
-      setShowModal(true);
+    // Only show password verification if not redirected from logout
+    const params = new URLSearchParams(location.search);
+    const fromLogout = params.get('fromLogout') === 'true';
+    
+    if (!isVerified && !fromLogout) {
+      setVerified(false);
     }
-  }, [isVerified]);
+  }, [isVerified, location, setVerified]);
 
   const handleVerified = () => {
     setVerified(true);
-    setShowModal(false);
   };
 
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
         <PasswordVerificationModal
-          isOpen={showModal}
+          isOpen={!isVerified}
           onVerified={handleVerified}
         />
         

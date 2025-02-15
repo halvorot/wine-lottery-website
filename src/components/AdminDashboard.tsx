@@ -56,13 +56,13 @@ export const AdminDashboard = () => {
       // Attempt to sign out without checking session first
       await supabase.auth.signOut();
       
-      // Regardless of the outcome, navigate to home and force reload
-      navigate("/");
+      // Navigate to home with fromLogout parameter
+      navigate("/?fromLogout=true");
       window.location.reload();
     } catch (error) {
       console.error("Logout error:", error);
       // Even if there's an error, clear everything and redirect
-      navigate("/");
+      navigate("/?fromLogout=true");
       window.location.reload();
     }
   };
