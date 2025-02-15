@@ -289,7 +289,7 @@ export const AdminDashboard = () => {
 
       <AdminStats
         entriesCount={entries?.length || 0}
-        prizesCount={totalCount || 0}
+        prizesCount={totalPrizes || 0}
       />
 
       <PrizesSection
