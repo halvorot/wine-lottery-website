@@ -20,10 +20,11 @@ export const LiveDrawTab = () => {
   const { data: todayPrizes } = useQuery<Prize[]>({
     queryKey: ["today-prizes"],
     queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from('prizes')
         .select('*')
-        .eq("draw_date", new Date().toISOString().split("T")[0])
+        .eq("draw_date", today)
         .order("quantity", { ascending: false });
 
       if (error) throw error;
@@ -34,11 +35,14 @@ export const LiveDrawTab = () => {
   const handleDrawWinner = async () => {
     const today = new Date().toISOString().split("T")[0];
     
+    type EntryResponse = Awaited<ReturnType<typeof supabase.from<'lottery_entries'>>>['data'];
+    type PrizeResponse = Awaited<ReturnType<typeof supabase.from<'prizes'>>>['data'];
+    
     // Get all entries for today
     const { data: entries, error: entriesError } = await supabase
         .from('lottery_entries')
         .select('*')
-        .eq("draw_date", today)
+        .eq("entry_date", today)
         .eq("drawn", false);
 
     if (entriesError || !entries || entries.length === 0) {
@@ -73,11 +77,11 @@ export const LiveDrawTab = () => {
     // Insert winner record
     const { error: winnerError } = await supabase
       .from('lottery_winners')
-      .insert([{
+      .insert({
         entry_id: randomEntry.id,
         prize_id: randomPrize.id,
         draw_date: today
-      }] satisfies Partial<LotteryWinner>[]);
+      });
 
     if (winnerError) {
       toast({
