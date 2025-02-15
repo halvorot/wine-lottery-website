@@ -125,21 +125,21 @@ export type Database = {
           created_at: string | null
           id: string
           is_admin: boolean | null
-          user_ip: string
+          user_ip: string | null
           verified_date: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           is_admin?: boolean | null
-          user_ip: string
+          user_ip?: string | null
           verified_date?: string
         }
         Update: {
           created_at?: string | null
           id?: string
           is_admin?: boolean | null
-          user_ip?: string
+          user_ip?: string | null
           verified_date?: string
         }
         Relationships: []
