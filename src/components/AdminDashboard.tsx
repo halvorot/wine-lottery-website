@@ -6,6 +6,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+type LotteryStatus = {
+  id: string;
+  date: string;
+  is_locked: boolean;
+  locked_at: string | null;
+  created_at: string;
+}
+
 export const AdminDashboard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -15,34 +23,33 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
       
-      // Use upsert to either get or create the status
-      const { data, error } = await supabase
+      // First try to get existing status
+      const { data: existingStatus, error: fetchError } = await supabase
         .from("lottery_status")
-        .upsert(
-          { date: today, is_locked: false },
-          { 
-            onConflict: 'date',
-            ignoreDuplicates: true 
-          }
-        )
+        .select("*")
         .eq("date", today)
         .maybeSingle();
-
-      if (error) throw error;
       
-      if (!data) {
-        // If no data returned, fetch it again
-        const { data: existingStatus, error: fetchError } = await supabase
+      if (fetchError) throw fetchError;
+      
+      // If no status exists, create one
+      if (!existingStatus) {
+        const { data: newStatus, error: createError } = await supabase
           .from("lottery_status")
-          .select("*")
-          .eq("date", today)
-          .maybeSingle();
+          .insert([
+            { 
+              date: today,
+              is_locked: false 
+            }
+          ])
+          .select()
+          .single();
           
-        if (fetchError) throw fetchError;
-        return existingStatus;
+        if (createError) throw createError;
+        return newStatus as LotteryStatus;
       }
       
-      return data;
+      return existingStatus as LotteryStatus;
     },
   });
 
@@ -66,25 +73,19 @@ export const AdminDashboard = () => {
       
       const { data, error } = await supabase
         .from("lottery_status")
-        .upsert(
-          {
-            date: today,
-            is_locked: newLockedStatus,
-            locked_at: newLockedStatus ? new Date().toISOString() : null,
-          },
-          { 
-            onConflict: 'date',
-            ignoreDuplicates: false // We want to update if exists
-          }
-        )
+        .update({ 
+          is_locked: newLockedStatus,
+          locked_at: newLockedStatus ? new Date().toISOString() : null
+        })
+        .eq("date", today)
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) {
         throw error;
       }
       
-      return data?.is_locked ?? newLockedStatus;
+      return (data as LotteryStatus).is_locked;
     },
     onSuccess: (newLockedStatus) => {
       queryClient.invalidateQueries({ queryKey: ["lottery-status"] });
