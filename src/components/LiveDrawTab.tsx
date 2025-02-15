@@ -11,6 +11,7 @@ import type { Database } from "@/integrations/supabase/types";
 type Tables = Database['public']['Tables']
 type Prize = Tables['prizes']['Row']
 type LotteryEntry = Tables['lottery_entries']['Row']
+type LotteryWinner = Tables['lottery_winners']['Row']
 
 export const LiveDrawTab = () => {
   const { toast } = useToast();
@@ -21,7 +22,7 @@ export const LiveDrawTab = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('prizes')
-        .select()
+        .select('*')
         .eq("draw_date", new Date().toISOString().split("T")[0])
         .order("quantity", { ascending: false });
 
@@ -36,7 +37,7 @@ export const LiveDrawTab = () => {
     // Get all entries for today
     const { data: entries, error: entriesError } = await supabase
         .from('lottery_entries')
-        .select()
+        .select('*')
         .eq("draw_date", today)
         .eq("drawn", false);
 
@@ -52,7 +53,7 @@ export const LiveDrawTab = () => {
     // Get available prizes for today
     const { data: availablePrizes, error: prizesError } = await supabase
         .from('prizes')
-        .select()
+        .select('*')
         .eq("draw_date", today)
         .gt("remaining_quantity", 0);
 
@@ -71,12 +72,12 @@ export const LiveDrawTab = () => {
 
     // Insert winner record
     const { error: winnerError } = await supabase
-      .from("lottery_winners")
+      .from('lottery_winners')
       .insert([{
         entry_id: randomEntry.id,
         prize_id: randomPrize.id,
         draw_date: today
-      }]);
+      }] satisfies Partial<LotteryWinner>[]);
 
     if (winnerError) {
       toast({
@@ -89,13 +90,13 @@ export const LiveDrawTab = () => {
 
     // Update prize remaining quantity
     const { error: updateError } = await supabase
-      .from("prizes")
+      .from('prizes')
       .update({ remaining_quantity: randomPrize.remaining_quantity - 1 })
       .eq("id", randomPrize.id);
 
     // Mark entry as drawn
     const { error: updateEntryError } = await supabase
-      .from("lottery_entries")
+      .from('lottery_entries')
       .update({ drawn: true })
       .eq("id", randomEntry.id);
 
