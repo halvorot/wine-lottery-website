@@ -47,13 +47,24 @@ export default function Auth() {
       });
 
       if (error) {
-        throw error;
+        // Parse the error message from the response body if available
+        let errorMessage = "Failed to sign in. Please try again.";
+        try {
+          const bodyJson = JSON.parse(error.message);
+          if (bodyJson.code === "invalid_credentials") {
+            errorMessage = "Invalid email or password. Please try again.";
+            setPassword(""); // Clear password on invalid credentials
+          }
+        } catch (e) {
+          // If parsing fails, use the default error message
+        }
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error("Error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to sign in. Please try again.",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
