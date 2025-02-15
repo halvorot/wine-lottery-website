@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "./admin/AdminHeader";
 import { AdminStats } from "./admin/AdminStats";
@@ -19,7 +18,6 @@ type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 export const AdminDashboard = () => {
-  const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useAuthStatus();
   const lotteryStatus = useLotteryStatus();
   const { todayEntries: entries } = useLotteryEntries();
@@ -50,20 +48,18 @@ export const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      // Always clear local storage first
+      // Clear local storage
       localStorage.clear();
       
-      // Attempt to sign out without checking session first
+      // Sign out
       await supabase.auth.signOut();
-      
-      // Navigate to home with fromLogout parameter
-      navigate("/?fromLogout=true");
-      window.location.reload();
     } catch (error) {
       console.error("Logout error:", error);
-      // Even if there's an error, clear everything and redirect
-      navigate("/?fromLogout=true");
-      window.location.reload();
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
