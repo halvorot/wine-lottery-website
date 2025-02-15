@@ -62,27 +62,43 @@ export function useEntryManagement() {
         throw new Error("No authenticated user found");
       }
 
+      // Validate new entries
+      if (!existingEntry && entry.num_tickets === 0) {
+        throw new Error("Number of tickets must be greater than 0 for new entries");
+      }
+
       // Check for existing entry one more time before submitting
       const existingEntryCheck = await checkExistingEntry(entry.email);
       
       if (existingEntryCheck) {
-        // Update existing entry
-        const { error } = await supabase
-          .from("lottery_entries")
-          .update({
+        if (entry.num_tickets === 0) {
+          // Delete the entry
+          const { error } = await supabase
+            .from("lottery_entries")
+            .delete()
+            .eq("id", existingEntryCheck.id);
+
+          if (error) throw error;
+          setExistingEntry(null);
+        } else {
+          // Update existing entry
+          const { error } = await supabase
+            .from("lottery_entries")
+            .update({
+              name: entry.name,
+              num_tickets: entry.num_tickets,
+            })
+            .eq("id", existingEntryCheck.id);
+
+          if (error) throw error;
+          
+          // Update local state to reflect the changes
+          setExistingEntry({
+            ...existingEntryCheck,
             name: entry.name,
             num_tickets: entry.num_tickets,
-          })
-          .eq("id", existingEntryCheck.id);
-
-        if (error) throw error;
-        
-        // Update local state to reflect the changes
-        setExistingEntry({
-          ...existingEntryCheck,
-          name: entry.name,
-          num_tickets: entry.num_tickets,
-        });
+          });
+        }
       } else {
         // Insert new entry
         const { error } = await supabase
@@ -100,17 +116,32 @@ export function useEntryManagement() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["today-entries"] });
       queryClient.invalidateQueries({ queryKey: ["recent-entries"] });
-      toast({
-        title: existingEntry ? "Entry Updated!" : "Entry Submitted!",
-        description: `${variables.name} is now entered in today's lottery with ${variables.num_tickets} ticket${variables.num_tickets !== 1 ? 's' : ''}. Good luck! 🍷`,
-      });
+      if (existingEntry && variables.num_tickets === 0) {
+        toast({
+          title: "Entry Deleted",
+          description: `${variables.name}'s entry has been deleted.`,
+        });
+      } else {
+        toast({
+          title: existingEntry ? "Entry Updated!" : "Entry Submitted!",
+          description: `${variables.name} is now entered in today's lottery with ${variables.num_tickets} ticket${variables.num_tickets !== 1 ? 's' : ''}. Good luck! 🍷`,
+        });
+      }
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to submit entry. Please try again.",
-        variant: "destructive",
-      });
+    onError: (error: Error) => {
+      if (error.message === "Number of tickets must be greater than 0 for new entries") {
+        toast({
+          title: "Invalid Entry",
+          description: "Number of tickets must be greater than 0 for new entries.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit entry. Please try again.",
+          variant: "destructive",
+        });
+      }
       console.error("Entry error:", error);
     },
   });

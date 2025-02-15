@@ -96,7 +96,7 @@ export function EntryForm({
         <Input
           id="tickets"
           type="number"
-          min="1"
+          min="0"
           max="10"
           value={numTickets}
           onChange={(e) => setNumTickets(parseInt(e.target.value, 10))}
@@ -108,10 +108,13 @@ export function EntryForm({
       <Button
         type="submit"
         disabled={isSubmitting || (existingEntry && !hasChanges)}
-        className="w-full bg-wine hover:bg-wine-light text-white"
+        variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
+        className="w-full hover:bg-wine-light text-white"
       >
         {isSubmitting
           ? "Submitting..."
+          : existingEntry && numTickets === 0
+          ? "Delete Entry"
           : existingEntry
           ? "Update Entry"
           : "Submit Entry"}
