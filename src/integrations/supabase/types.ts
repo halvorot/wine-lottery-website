@@ -120,6 +120,27 @@ export type Database = {
           },
         ]
       }
+      password_verifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_ip: string
+          verified_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_ip: string
+          verified_date?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_ip?: string
+          verified_date?: string
+        }
+        Relationships: []
+      }
       prizes: {
         Row: {
           created_at: string
