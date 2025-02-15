@@ -12,7 +12,7 @@ export function useAuthStatus() {
       setIsAuthenticated(!!session);
 
       if (session) {
-        const { data: adminStatus, error } = await supabase.rpc('check_is_admin');
+        const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
         if (!error) {
           setIsAdmin(adminStatus);
         }
@@ -25,7 +25,7 @@ export function useAuthStatus() {
       setIsAuthenticated(!!session);
       
       if (session) {
-        const { data: adminStatus, error } = await supabase.rpc('check_is_admin');
+        const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
         if (!error) {
           setIsAdmin(adminStatus);
         }

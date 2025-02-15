@@ -1,3 +1,4 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,6 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [showAdminError, setShowAdminError] = useState(false);
   const { isAuthenticated, isAdmin } = useAuthStatus();
   const lotteryStatus = useLotteryStatus();
   const { 
@@ -32,6 +32,7 @@ export const AdminDashboard = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showAdminError, setShowAdminError] = useState(false);
 
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -41,9 +42,11 @@ export const AdminDashboard = () => {
   const { data: prizes, isLoading: isPrizesLoading } = useQuery({
     queryKey: ["prizes", sortColumn, sortDirection, page],
     queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
         .from("prizes")
         .select("*", { count: "exact" })
+        .eq("draw_date", today)
         .order(sortColumn, { ascending: sortDirection === "asc" })
         .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
 
@@ -55,9 +58,11 @@ export const AdminDashboard = () => {
   const { data: totalPrizes } = useQuery({
     queryKey: ["prizes-count"],
     queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
       const { count, error } = await supabase
         .from("prizes")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .eq("draw_date", today);
 
       if (error) throw error;
       return count || 0;
@@ -65,7 +70,7 @@ export const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated && !isAdmin && !showAdminError) {
+    if (isAuthenticated && !isAdmin) {
       setShowAdminError(true);
       toast({
         title: "Access Denied",
@@ -73,7 +78,7 @@ export const AdminDashboard = () => {
         variant: "destructive",
       });
     }
-  }, [isAuthenticated, isAdmin, toast, showAdminError]);
+  }, [isAuthenticated, isAdmin, toast]);
 
   const toggleLockMutation = useMutation({
     mutationFn: async () => {
@@ -255,7 +260,7 @@ export const AdminDashboard = () => {
     );
   }
 
-  if (isAuthenticated && !isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
         <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
@@ -284,7 +289,7 @@ export const AdminDashboard = () => {
 
       <AdminStats
         entriesCount={entries?.length || 0}
-        prizesCount={entriesCount || 0}
+        prizesCount={totalCount || 0}
       />
 
       <PrizesSection
