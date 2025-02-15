@@ -13,11 +13,29 @@ export const AdminDashboard = () => {
   const { data: lotteryStatus, isLoading: isStatusLoading } = useQuery({
     queryKey: ["lottery-status"],
     queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("lottery_status")
         .select("*")
-        .eq("date", new Date().toISOString().split("T")[0])
+        .eq("date", today)
         .single();
+
+      // If no status exists for today, create one
+      if (error?.code === "PGRST116") {
+        const { data: newStatus, error: createError } = await supabase
+          .from("lottery_status")
+          .insert([
+            {
+              date: today,
+              is_locked: false,
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        return newStatus;
+      }
 
       if (error) throw error;
       return data;
@@ -39,25 +57,29 @@ export const AdminDashboard = () => {
 
   const toggleLockMutation = useMutation({
     mutationFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
       const newLockedStatus = !lotteryStatus?.is_locked;
+      
       const { error } = await supabase
         .from("lottery_status")
-        .update({
+        .upsert({
+          date: today,
           is_locked: newLockedStatus,
           locked_at: newLockedStatus ? new Date().toISOString() : null,
         })
-        .eq("date", new Date().toISOString().split("T")[0]);
+        .eq("date", today);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+      
+      return newLockedStatus;
     },
-    onSuccess: () => {
+    onSuccess: (newLockedStatus) => {
       queryClient.invalidateQueries({ queryKey: ["lottery-status"] });
-      queryClient.invalidateQueries({ queryKey: ["today-entries"] });
       toast({
         title: "Success",
-        description: `Lottery ${
-          !lotteryStatus?.is_locked ? "locked" : "unlocked"
-        } successfully!`,
+        description: `Lottery ${newLockedStatus ? "locked" : "unlocked"} successfully!`,
       });
     },
     onError: (error) => {
