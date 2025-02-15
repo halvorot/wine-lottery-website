@@ -60,10 +60,7 @@ export function PasswordVerificationModal({
         // Not verified today, create new verification
         const { error } = await supabase
           .from("password_verifications")
-          .insert([{ 
-            is_admin: isAdmin,
-            user_ip: "127.0.0.1" // Default value since we made it nullable but still required
-          }]);
+          .insert([{ is_admin: isAdmin }]);
 
         if (error) {
           throw error;
