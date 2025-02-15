@@ -96,30 +96,17 @@ export function EntryForm({
         />
       </div>
 
-      <div className="flex gap-4">
-        <Button
-          type="submit"
-          disabled={isSubmitting || (existingEntry && !hasChanges)}
-          className="flex-1 bg-wine hover:bg-wine-light text-white"
-        >
-          {isSubmitting
-            ? "Submitting..."
-            : existingEntry
-            ? "Update Entry"
-            : "Submit Entry"}
-        </Button>
-        
-        {existingEntry && (
-          <Button
-            type="button"
-            onClick={onNewEntry}
-            variant="outline"
-            className="flex-1"
-          >
-            Add New Entry
-          </Button>
-        )}
-      </div>
+      <Button
+        type="submit"
+        disabled={isSubmitting || (existingEntry && !hasChanges)}
+        className="w-full bg-wine hover:bg-wine-light text-white"
+      >
+        {isSubmitting
+          ? "Submitting..."
+          : existingEntry
+          ? "Update Entry"
+          : "Submit Entry"}
+      </Button>
     </form>
   );
 }
