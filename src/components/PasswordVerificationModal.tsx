@@ -35,12 +35,30 @@ export function PasswordVerificationModal({
       const DAILY_PASSWORD = "wine2024";
 
       if (password === DAILY_PASSWORD) {
+        // Check if already verified today
+        const today = new Date().toISOString().split("T")[0];
+        const { data: existingVerification } = await supabase
+          .from("password_verifications")
+          .select("*")
+          .eq("verified_date", today)
+          .maybeSingle();
+
+        if (existingVerification) {
+          // Already verified today
+          toast({
+            title: "Success",
+            description: "Already verified for today!",
+          });
+          onVerified();
+          return;
+        }
+
+        // Not verified today, create new verification
         const { error } = await supabase
           .from("password_verifications")
-          .insert([{ user_ip: "placeholder" }]);
+          .insert([{ user_ip: "127.0.0.1" }]);
 
-        if (error && error.code !== "23505") {
-          // Ignore unique violation errors as it means user is already verified
+        if (error) {
           throw error;
         }
 
@@ -57,6 +75,7 @@ export function PasswordVerificationModal({
         });
       }
     } catch (error) {
+      console.error("Verification error:", error);
       toast({
         title: "Error",
         description: "Failed to verify password. Please try again.",
