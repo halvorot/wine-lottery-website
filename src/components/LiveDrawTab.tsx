@@ -6,28 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import type { Database } from "@/integrations/supabase/types";
 
-interface LotteryEntry {
-  id: string;
-  name: string;
-  email: string;
-  num_tickets: number;
-  entry_date: string;
-  created_at: string;
-  drawn: boolean;
-  created_by: string | null;
-}
-
-interface Prize {
-  id: string;
-  name: string;
-  description: string | null;
-  quantity: number;
-  remaining_quantity: number;
-  draw_date: string;
-  created_at: string;
-  created_by: string;
-}
+type Prize = Database['public']['Tables']['prizes']['Row'];
+type LotteryEntry = Database['public']['Tables']['lottery_entries']['Row'];
 
 export const LiveDrawTab = () => {
   const { toast } = useToast();
@@ -38,7 +20,7 @@ export const LiveDrawTab = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("prizes")
-        .select("*")
+        .select()
         .eq("draw_date", new Date().toISOString().split("T")[0])
         .order("quantity", { ascending: false });
 
@@ -55,8 +37,7 @@ export const LiveDrawTab = () => {
       .from("lottery_entries")
       .select()
       .eq("draw_date", today)
-      .eq("drawn", false)
-      .returns<LotteryEntry[]>();
+      .eq("drawn", false);
 
     if (entriesError || !entries || entries.length === 0) {
       toast({
@@ -72,8 +53,7 @@ export const LiveDrawTab = () => {
       .from("prizes")
       .select()
       .eq("draw_date", today)
-      .gt("remaining_quantity", 0)
-      .returns<Prize[]>();
+      .gt("remaining_quantity", 0);
 
     if (prizesError || !availablePrizes || availablePrizes.length === 0) {
       toast({
