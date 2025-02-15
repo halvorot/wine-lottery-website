@@ -55,7 +55,7 @@ export type Database = {
         Row: {
           created_at: string
           drawn: boolean | null
-          email: string | null
+          email: string
           entry_date: string
           id: string
           name: string
@@ -64,7 +64,7 @@ export type Database = {
         Insert: {
           created_at?: string
           drawn?: boolean | null
-          email?: string | null
+          email: string
           entry_date?: string
           id?: string
           name: string
@@ -73,7 +73,7 @@ export type Database = {
         Update: {
           created_at?: string
           drawn?: boolean | null
-          email?: string | null
+          email?: string
           entry_date?: string
           id?: string
           name?: string

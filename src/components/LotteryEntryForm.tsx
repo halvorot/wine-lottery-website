@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 interface LotteryEntry {
   id: string;
   name: string;
-  email: string | null;
+  email: string;
   num_tickets: number;
 }
 
@@ -36,19 +36,45 @@ export function LotteryEntryForm() {
     },
   });
 
-  // Query existing entries for today
-  const { data: todayEntries } = useQuery({
-    queryKey: ["today-entries"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lottery_entries")
-        .select("*")
-        .eq("entry_date", new Date().toISOString().split("T")[0]);
+  // Query existing entry when email changes
+  const checkExistingEntry = async (email: string) => {
+    if (!email) return null;
+    
+    const { data, error } = await supabase
+      .from("lottery_entries")
+      .select("*")
+      .eq("entry_date", new Date().toISOString().split("T")[0])
+      .eq("email", email)
+      .maybeSingle();
 
-      if (error) throw error;
-      return data;
-    },
-  });
+    if (error) {
+      console.error("Error checking existing entry:", error);
+      return null;
+    }
+
+    return data;
+  };
+
+  // Handle email change
+  const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    
+    if (newEmail) {
+      const entry = await checkExistingEntry(newEmail);
+      if (entry) {
+        setExistingEntry(entry);
+        setName(entry.name);
+        setNumTickets(entry.num_tickets);
+        toast({
+          title: "Existing Entry Found",
+          description: "You can update your existing entry for today.",
+        });
+      } else {
+        setExistingEntry(null);
+      }
+    }
+  };
 
   // Submit or update entry mutation
   const mutation = useMutation({
@@ -58,17 +84,18 @@ export function LotteryEntryForm() {
       num_tickets: number;
       id?: string;
     }) => {
-      if (entry.id) {
+      if (existingEntry) {
+        // Update existing entry
         const { error } = await supabase
           .from("lottery_entries")
           .update({
             name: entry.name,
-            email: entry.email,
             num_tickets: entry.num_tickets,
           })
-          .eq("id", entry.id);
+          .eq("id", existingEntry.id);
         if (error) throw error;
       } else {
+        // Insert new entry
         const { error } = await supabase.from("lottery_entries").insert([
           {
             name: entry.name,
@@ -106,22 +133,11 @@ export function LotteryEntryForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutation.mutate({
-      id: existingEntry?.id,
       name,
       email,
       num_tickets: numTickets,
     });
   };
-
-  useEffect(() => {
-    if (todayEntries?.length > 0) {
-      const entry = todayEntries[0];
-      setExistingEntry(entry);
-      setName(entry.name);
-      setEmail(entry.email || "");
-      setNumTickets(entry.num_tickets);
-    }
-  }, [todayEntries]);
 
   if (lotteryStatus?.is_locked) {
     return (
@@ -136,6 +152,22 @@ export function LotteryEntryForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
+        <label htmlFor="email" className="block text-sm font-medium mb-1">
+          Email
+        </label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={handleEmailChange}
+          required
+          placeholder="Your email"
+          className="w-full"
+          disabled={existingEntry !== null}
+        />
+      </div>
+
+      <div>
         <label htmlFor="name" className="block text-sm font-medium mb-1">
           Name
         </label>
@@ -145,19 +177,7 @@ export function LotteryEntryForm() {
           onChange={(e) => setName(e.target.value)}
           required
           placeholder="Your name"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email (optional)
-        </label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email"
+          className="w-full"
         />
       </div>
 
@@ -173,6 +193,7 @@ export function LotteryEntryForm() {
           value={numTickets}
           onChange={(e) => setNumTickets(parseInt(e.target.value, 10))}
           required
+          className="w-full"
         />
       </div>
 
