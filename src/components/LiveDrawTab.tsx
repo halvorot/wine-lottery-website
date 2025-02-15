@@ -35,9 +35,6 @@ export const LiveDrawTab = () => {
   const handleDrawWinner = async () => {
     const today = new Date().toISOString().split("T")[0];
     
-    type EntryResponse = Awaited<ReturnType<typeof supabase.from<'lottery_entries'>>>['data'];
-    type PrizeResponse = Awaited<ReturnType<typeof supabase.from<'prizes'>>>['data'];
-    
     // Get all entries for today
     const { data: entries, error: entriesError } = await supabase
         .from('lottery_entries')
