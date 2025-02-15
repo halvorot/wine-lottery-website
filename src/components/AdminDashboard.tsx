@@ -1,14 +1,15 @@
 
-import { Button } from "@/components/ui/button";
-import { Timer, Trophy, Users, Lock, Unlock } from "lucide-react";
-import { AddPrizeForm } from "@/components/AddPrizeForm";
-import { PrizesTable } from "@/components/admin/PrizesTable";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import Auth from "@/pages/Auth";
+import { AdminHeader } from "./admin/AdminHeader";
+import { AdminStats } from "./admin/AdminStats";
+import { PrizesSection } from "./admin/PrizesSection";
+import { EntriesSection } from "./admin/EntriesSection";
 
 type LotteryStatus = {
   id: string;
@@ -58,7 +59,6 @@ export const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    // Only show the error toast once when we confirm the user is not an admin
     if (session && !isAdminLoading && !isAdmin && !showAdminError) {
       setShowAdminError(true);
       toast({
@@ -68,29 +68,6 @@ export const AdminDashboard = () => {
       });
     }
   }, [session, isAdmin, isAdminLoading, toast, showAdminError]);
-
-  // If not authenticated, show the Auth component
-  if (!session) {
-    return <Auth />;
-  }
-
-  // If authenticated but not admin, show access denied message instead of redirecting
-  if (session && !isAdminLoading && !isAdmin) {
-    return (
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-        <p className="text-gray-600 mb-4">You need admin privileges to access this section.</p>
-        <Button variant="outline" onClick={() => navigate("/")}>
-          Return to Home
-        </Button>
-      </div>
-    );
-  }
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const { data: lotteryStatus, isLoading: isStatusLoading } = useQuery({
     queryKey: ["lottery-status"],
@@ -108,12 +85,7 @@ export const AdminDashboard = () => {
       if (!existingStatus) {
         const { data: newStatus, error: createError } = await supabase
           .from("lottery_status")
-          .insert([
-            { 
-              date: today,
-              is_locked: false 
-            }
-          ])
+          .insert([{ date: today, is_locked: false }])
           .select()
           .single();
           
@@ -164,16 +136,6 @@ export const AdminDashboard = () => {
     },
   });
 
-  const handleSort = (column: SortColumn) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortColumn(column);
-      setSortDirection("asc");
-    }
-    setPage(1);
-  };
-
   const toggleLockMutation = useMutation({
     mutationFn: async () => {
       const today = new Date().toISOString().split("T")[0];
@@ -212,107 +174,65 @@ export const AdminDashboard = () => {
     },
   });
 
-  if (!isAdmin) {
-    return null;
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
+  if (!session) {
+    return <Auth />;
+  }
+
+  if (session && !isAdminLoading && !isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center">
+        <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+        <p className="text-gray-600 mb-4">You need admin privileges to access this section.</p>
+        <Button variant="outline" onClick={() => navigate("/")}>
+          Return to Home
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-        <div className="space-x-4">
-          <Button
-            onClick={() => toggleLockMutation.mutate()}
-            disabled={isStatusLoading || toggleLockMutation.isPending}
-            className={`${
-              lotteryStatus?.is_locked
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
-            } text-white`}
-          >
-            {lotteryStatus?.is_locked ? (
-              <>
-                <Unlock className="mr-2" /> Unlock Entries
-              </>
-            ) : (
-              <>
-                <Lock className="mr-2" /> Lock Entries
-              </>
-            )}
-          </Button>
-          <Button className="bg-wine hover:bg-wine-light text-white">
-            Draw Winner
-          </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            Sign Out
-          </Button>
-        </div>
-      </div>
+      <AdminHeader
+        isLocked={lotteryStatus?.is_locked || false}
+        isLoading={isStatusLoading}
+        isPending={toggleLockMutation.isPending}
+        onToggleLock={() => toggleLockMutation.mutate()}
+        onLogout={handleLogout}
+      />
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-cream rounded-lg p-6">
-          <Users className="mb-2" />
-          <h3 className="text-xl font-semibold">Total Entries</h3>
-          <p className="text-2xl font-bold">{entries?.length || 0}</p>
-        </div>
-        <div className="bg-cream rounded-lg p-6">
-          <Timer className="mb-2" />
-          <h3 className="text-xl font-semibold">Time Left</h3>
-          <p className="text-2xl font-bold">03:45:22</p>
-        </div>
-        <div className="bg-cream rounded-lg p-6">
-          <Trophy className="mb-2" />
-          <h3 className="text-xl font-semibold">Total Prizes</h3>
-          <p className="text-2xl font-bold">{totalPrizes || 0}</p>
-        </div>
-      </div>
+      <AdminStats
+        entriesCount={entries?.length || 0}
+        prizesCount={totalPrizes || 0}
+      />
 
-      <div className="space-y-8">
-        <div className="bg-cream/50 rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Add New Prize</h3>
-          <AddPrizeForm />
-        </div>
+      <PrizesSection
+        prizes={prizes || []}
+        isLoading={isPrizesLoading}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        page={page}
+        totalCount={totalPrizes || 0}
+        entriesPerPage={entriesPerPage}
+        onSort={handleSort}
+        onPageChange={setPage}
+      />
 
-        {!isPrizesLoading && prizes && (
-          <PrizesTable
-            prizes={prizes}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            page={page}
-            totalCount={totalPrizes || 0}
-            entriesPerPage={entriesPerPage}
-            onPageChange={setPage}
-          />
-        )}
-
-        <div className="overflow-x-auto">
-          <h3 className="text-xl font-semibold mb-4">Today's Entries</h3>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-4">Name</th>
-                <th className="text-left p-4">Email</th>
-                <th className="text-left p-4">Tickets</th>
-                <th className="text-left p-4">Entry Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries?.map((entry) => (
-                <tr key={entry.id} className="border-b">
-                  <td className="p-4">{entry.name}</td>
-                  <td className="p-4">{entry.email || "-"}</td>
-                  <td className="p-4">{entry.num_tickets}</td>
-                  <td className="p-4">
-                    {new Date(entry.created_at).toLocaleTimeString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EntriesSection entries={entries || []} />
     </div>
   );
 };
-
