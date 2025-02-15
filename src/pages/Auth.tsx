@@ -15,6 +15,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("signin");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -70,6 +71,21 @@ export default function Auth() {
       });
 
       if (error) {
+        // Parse the error message from the response body if available
+        let errorMessage = error.message;
+        try {
+          const bodyJson = JSON.parse(error.message);
+          if (bodyJson.code === "user_already_exists") {
+            setActiveTab("signin");
+            toast({
+              title: "Account Exists",
+              description: "This email is already registered. Please sign in instead.",
+            });
+            return;
+          }
+        } catch (e) {
+          // If parsing fails, use the original error message
+        }
         throw error;
       }
 
@@ -121,7 +137,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
