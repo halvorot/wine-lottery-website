@@ -51,20 +51,11 @@ export const LiveDrawTab = () => {
     const today = new Date().toISOString().split("T")[0];
     
     // Get all entries for today
-    const { data: entries, error: entriesError } = await supabase
+    const { data: entries } = await supabase
       .from("lottery_entries")
-      .select("*")
+      .select<'*', LotteryEntry>('*')
       .eq("draw_date", today)
       .eq("drawn", false);
-
-    if (entriesError) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch entries",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (!entries || entries.length === 0) {
       toast({
@@ -78,7 +69,7 @@ export const LiveDrawTab = () => {
     // Get available prizes for today
     const { data: availablePrizes, error: prizesError } = await supabase
       .from("prizes")
-      .select("*")
+      .select<'*', Prize>('*')
       .eq("draw_date", today)
       .gt("remaining_quantity", 0);
 
