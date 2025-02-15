@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { WinnerAnnouncement } from "./WinnerAnnouncement";
+import { useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tables = Database['public']['Tables']
@@ -16,6 +18,7 @@ type LotteryWinner = Tables['lottery_winners']['Row']
 export const LiveDrawTab = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuthStatus();
+  const [lastWinner, setLastWinner] = useState<{ name: string; prizeName: string } | null>(null);
   
   const { data: todayPrizes } = useQuery<Prize[]>({
     queryKey: ["today-prizes"],
@@ -26,6 +29,20 @@ export const LiveDrawTab = () => {
         .select('*')
         .eq("draw_date", today)
         .order("quantity", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: winners } = useQuery<(LotteryWinner & { entry: LotteryEntry; prize: Prize })[]>({
+    queryKey: ["today-winners"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from('lottery_winners')
+        .select('*, entry:lottery_entries(*), prize:prizes(*)')
+        .eq("draw_date", today);
 
       if (error) throw error;
       return data || [];
@@ -110,6 +127,12 @@ export const LiveDrawTab = () => {
       return;
     }
 
+    // Set the last winner for the animation
+    setLastWinner({
+      name: randomEntry.name,
+      prizeName: randomPrize.name
+    });
+
     toast({
       title: "Success!",
       description: `Winner drawn successfully! ${randomEntry.name} has won ${randomPrize.name}!`
@@ -118,6 +141,7 @@ export const LiveDrawTab = () => {
 
   return (
     <div className="space-y-8">
+      <WinnerAnnouncement winner={lastWinner} />
       <LiveTicker />
       <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center space-y-8">
         <Trophy size={48} className="text-gold mx-auto" strokeWidth={1.5} />
@@ -131,21 +155,39 @@ export const LiveDrawTab = () => {
         )}
         <div className="grid md:grid-cols-3 gap-6">
           {todayPrizes && todayPrizes.length > 0 ? (
-            todayPrizes.map((prize, index) => (
-              <div key={prize.id} className="bg-cream rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-2">
-                  {index === 0
-                    ? "Grand Prize"
-                    : index === 1
-                    ? "Second Prize"
-                    : "Third Prize"}
-                </h3>
-                <p>{prize.name}</p>
-                {prize.description && (
-                  <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
-                )}
-              </div>
-            ))
+            todayPrizes.map((prize, index) => {
+              const prizeWinners = winners?.filter(w => w.prize_id === prize.id) || [];
+              return (
+                <div key={prize.id} className="bg-cream rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-2">
+                    {index === 0
+                      ? "Grand Prize"
+                      : index === 1
+                      ? "Second Prize"
+                      : "Third Prize"}
+                  </h3>
+                  <p>{prize.name}</p>
+                  {prize.description && (
+                    <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
+                  )}
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground">
+                      {prize.remaining_quantity} remaining of {prize.quantity}
+                    </p>
+                    {prizeWinners.length > 0 && (
+                      <div className="mt-2 text-sm border-t border-gray-200 pt-2">
+                        <p className="font-semibold">Winners:</p>
+                        {prizeWinners.map(winner => (
+                          <p key={winner.id} className="text-primary">
+                            {winner.entry.name}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })
           ) : (
             <div className="col-span-3 text-center text-muted-foreground">
               No prizes available for today's draw yet.
