@@ -231,6 +231,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      check_is_admin_no_recursion: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
