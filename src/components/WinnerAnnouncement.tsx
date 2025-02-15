@@ -1,6 +1,8 @@
 
-import { Trophy, Sparkles } from "lucide-react";
+import { Trophy, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 interface WinnerAnnouncementProps {
   winner: {
@@ -15,8 +17,6 @@ export const WinnerAnnouncement = ({ winner }: WinnerAnnouncementProps) => {
   useEffect(() => {
     if (winner) {
       setShow(true);
-      const timer = setTimeout(() => setShow(false), 5000);
-      return () => clearTimeout(timer);
     }
   }, [winner]);
 
@@ -24,7 +24,15 @@ export const WinnerAnnouncement = ({ winner }: WinnerAnnouncementProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center space-y-4 animate-scale-in">
+      <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center space-y-4 animate-scale-in relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="absolute right-2 top-2"
+          onClick={() => setShow(false)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
         <div className="flex justify-center space-x-2">
           <Sparkles className="text-gold animate-bounce" size={32} />
           <Trophy className="text-gold" size={48} />

@@ -8,6 +8,8 @@ import { useToast } from "./ui/use-toast";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { WinnerAnnouncement } from "./WinnerAnnouncement";
 import { useState } from "react";
+import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tables = Database['public']['Tables']
@@ -157,8 +159,22 @@ export const LiveDrawTab = () => {
           {todayPrizes && todayPrizes.length > 0 ? (
             todayPrizes.map((prize, index) => {
               const prizeWinners = winners?.filter(w => w.prize_id === prize.id) || [];
+              const isDrawn = prizeWinners.length > 0;
+              
               return (
-                <div key={prize.id} className="bg-cream rounded-lg p-6">
+                <div 
+                  key={prize.id} 
+                  className={cn(
+                    "bg-cream rounded-lg p-6 relative transition-colors",
+                    isDrawn && "bg-cream/50"
+                  )}
+                >
+                  <Badge 
+                    variant={prize.remaining_quantity > 0 ? "secondary" : "destructive"}
+                    className="absolute -top-2 -right-2"
+                  >
+                    {prize.remaining_quantity} left
+                  </Badge>
                   <h3 className="text-xl font-semibold mb-2">
                     {index === 0
                       ? "Grand Prize"
@@ -170,23 +186,18 @@ export const LiveDrawTab = () => {
                   {prize.description && (
                     <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
                   )}
-                  <div className="mt-4">
-                    <p className="text-sm text-muted-foreground">
-                      {prize.remaining_quantity} remaining of {prize.quantity}
-                    </p>
-                    {prizeWinners.length > 0 && (
-                      <div className="mt-2 text-sm border-t border-gray-200 pt-2">
-                        <p className="font-semibold">Winners:</p>
-                        {prizeWinners.map(winner => (
-                          <p key={winner.id} className="text-primary">
-                            {winner.entry.name}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {prizeWinners.length > 0 && (
+                    <div className="mt-4 text-sm border-t border-gray-200 pt-2">
+                      <p className="font-semibold">Winners:</p>
+                      {prizeWinners.map(winner => (
+                        <p key={winner.id} className="text-primary">
+                          {winner.entry.name}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )
+              );
             })
           ) : (
             <div className="col-span-3 text-center text-muted-foreground">
