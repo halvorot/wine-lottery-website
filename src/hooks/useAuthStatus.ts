@@ -22,6 +22,13 @@ export function useAuthStatus() {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        // Clear the state immediately on sign out
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+        return;
+      }
+      
       setIsAuthenticated(!!session);
       
       if (session) {

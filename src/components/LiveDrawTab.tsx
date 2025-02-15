@@ -7,11 +7,33 @@ import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 
+interface LotteryEntry {
+  id: string;
+  name: string;
+  email: string;
+  num_tickets: number;
+  entry_date: string;
+  created_at: string;
+  drawn: boolean;
+  created_by: string | null;
+}
+
+interface Prize {
+  id: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  remaining_quantity: number;
+  draw_date: string;
+  created_at: string;
+  created_by: string;
+}
+
 export const LiveDrawTab = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuthStatus();
   
-  const { data: todayPrizes } = useQuery({
+  const { data: todayPrizes } = useQuery<Prize[]>({
     queryKey: ["today-prizes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -32,7 +54,8 @@ export const LiveDrawTab = () => {
     const { data: entries, error: entriesError } = await supabase
       .from("lottery_entries")
       .select("*")
-      .eq("draw_date", today);
+      .eq("draw_date", today)
+      .eq("drawn", false);
 
     if (entriesError) {
       toast({
@@ -96,10 +119,16 @@ export const LiveDrawTab = () => {
       .update({ remaining_quantity: randomPrize.remaining_quantity - 1 })
       .eq("id", randomPrize.id);
 
-    if (updateError) {
+    // Mark entry as drawn
+    const { error: updateEntryError } = await supabase
+      .from("lottery_entries")
+      .update({ drawn: true })
+      .eq("id", randomEntry.id);
+
+    if (updateError || updateEntryError) {
       toast({
         title: "Error",
-        description: "Failed to update prize quantity",
+        description: "Failed to update records",
         variant: "destructive",
       });
       return;
@@ -107,7 +136,7 @@ export const LiveDrawTab = () => {
 
     toast({
       title: "Success!",
-      description: `Winner drawn successfully! Entry #${randomEntry.entry_number} has won ${randomPrize.name}!`
+      description: `Winner drawn successfully! ${randomEntry.name} has won ${randomPrize.name}!`
     });
   };
 
