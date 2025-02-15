@@ -81,6 +81,30 @@ export type Database = {
         }
         Relationships: []
       }
+      lottery_status: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          is_locked: boolean
+          locked_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+        }
+        Relationships: []
+      }
       lottery_winners: {
         Row: {
           created_at: string
@@ -183,6 +207,10 @@ export type Database = {
     }
     Functions: {
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_lottery_locked: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

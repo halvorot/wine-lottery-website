@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Wine } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
+import { LotteryEntryForm } from "./LotteryEntryForm";
 
 export const LotteryTab = () => {
   return (
@@ -19,25 +20,15 @@ export const LotteryTab = () => {
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg w-full">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg w-full space-y-8">
         <div className="text-center space-y-8">
           <h2 className="text-2xl font-semibold">Next Draw In</h2>
           <CountdownTimer />
-          <div className="flex justify-center gap-4">
-            <Button
-              size="lg"
-              className="bg-wine hover:bg-wine-light text-white"
-            >
-              Enter Now
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-wine text-wine hover:bg-wine/5"
-            >
-              Learn More
-            </Button>
-          </div>
+        </div>
+
+        <div className="max-w-md mx-auto">
+          <h3 className="text-xl font-semibold mb-4">Enter the Lottery</h3>
+          <LotteryEntryForm />
         </div>
       </div>
     </div>
