@@ -13,6 +13,10 @@ import { EntriesSection } from "./admin/EntriesSection";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useLotteryStatus } from "@/hooks/useLotteryStatus";
 import { useLotteryEntries } from "@/hooks/useLotteryEntries";
+import { useQuery } from "@tanstack/react-query";
+
+type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortDirection = "asc" | "desc";
 
 export const AdminDashboard = () => {
   const { toast } = useToast();
@@ -25,6 +29,37 @@ export const AdminDashboard = () => {
     todayEntries: entries,
     totalCount: entriesCount,
   } = useLotteryEntries();
+
+  const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [page, setPage] = useState(1);
+  const entriesPerPage = 10;
+
+  const { data: prizes, isLoading: isPrizesLoading } = useQuery({
+    queryKey: ["prizes", sortColumn, sortDirection, page],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prizes")
+        .select("*", { count: "exact" })
+        .order(sortColumn, { ascending: sortDirection === "asc" })
+        .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: totalPrizes } = useQuery({
+    queryKey: ["prizes-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("prizes")
+        .select("*", { count: "exact", head: true });
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
   useEffect(() => {
     if (isAuthenticated && !isAdmin && !showAdminError) {
@@ -75,6 +110,16 @@ export const AdminDashboard = () => {
     },
   });
 
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -111,7 +156,17 @@ export const AdminDashboard = () => {
         prizesCount={entriesCount || 0}
       />
 
-      <PrizesSection />
+      <PrizesSection
+        prizes={prizes || []}
+        isLoading={isPrizesLoading}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        page={page}
+        totalCount={totalPrizes || 0}
+        entriesPerPage={entriesPerPage}
+        onSort={handleSort}
+        onPageChange={setPage}
+      />
 
       <EntriesSection entries={entries || []} />
     </div>
