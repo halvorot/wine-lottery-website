@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LotteryEntry } from "./types";
@@ -22,6 +22,18 @@ export function EntryForm({
   const [name, setName] = useState(existingEntry?.name || "");
   const [email, setEmail] = useState(existingEntry?.email || "");
   const [numTickets, setNumTickets] = useState(existingEntry?.num_tickets || 1);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    if (existingEntry) {
+      const isChanged = 
+        name !== existingEntry.name ||
+        numTickets !== existingEntry.num_tickets;
+      setHasChanges(isChanged);
+    } else {
+      setHasChanges(true); // Always enabled for new entries
+    }
+  }, [name, numTickets, existingEntry]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +99,7 @@ export function EntryForm({
       <div className="flex gap-4">
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (existingEntry && !hasChanges)}
           className="flex-1 bg-wine hover:bg-wine-light text-white"
         >
           {isSubmitting
