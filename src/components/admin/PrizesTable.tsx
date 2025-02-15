@@ -1,8 +1,21 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Prize {
   id: string;
@@ -38,7 +51,40 @@ export function PrizesTable({
   entriesPerPage,
   onPageChange,
 }: PrizesTableProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPrize, setSelectedPrize] = useState<Prize | null>(null);
+  const { toast } = useToast();
   const totalPages = Math.ceil(totalCount / entriesPerPage);
+
+  const handleDeleteClick = (prize: Prize) => {
+    setSelectedPrize(prize);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedPrize) return;
+
+    const { error } = await supabase
+      .from("prizes")
+      .delete()
+      .eq("id", selectedPrize.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete the prize. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Delete error:", error);
+    } else {
+      toast({
+        title: "Success",
+        description: "Prize deleted successfully",
+      });
+    }
+    setDeleteDialogOpen(false);
+    setSelectedPrize(null);
+  };
 
   const renderSortIcon = (column: SortColumn) => {
     return (
@@ -73,6 +119,7 @@ export function PrizesTable({
               <TableHead className="cursor-pointer">
                 Added {renderSortIcon("created_at")}
               </TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,6 +131,16 @@ export function PrizesTable({
                 <TableCell>{prize.remaining_quantity}</TableCell>
                 <TableCell>{format(new Date(prize.draw_date), "PPP")}</TableCell>
                 <TableCell>{format(new Date(prize.created_at), "PPP")}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteClick(prize)}
+                    className="text-destructive hover:text-destructive/90"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -111,6 +168,26 @@ export function PrizesTable({
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedPrize?.name}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
