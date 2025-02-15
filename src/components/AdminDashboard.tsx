@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Timer, Trophy, Users, Lock, Unlock } from "lucide-react";
 import { AddPrizeForm } from "@/components/AddPrizeForm";
@@ -7,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Auth from "@/pages/Auth";
 
 type LotteryStatus = {
   id: string;
@@ -27,6 +29,21 @@ export const AdminDashboard = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
@@ -35,28 +52,24 @@ export const AdminDashboard = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!session,
   });
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      
-      if (!isAdmin) {
-        toast({
-          title: "Access Denied",
-          description: "You need admin privileges to access this section.",
-          variant: "destructive",
-        });
-        navigate("/");
-      }
-    };
+  // If not authenticated, show the Auth component
+  if (!session) {
+    return <Auth />;
+  }
 
-    checkAuth();
-  }, [isAdmin, navigate, toast]);
+  // If authenticated but not admin, show access denied
+  if (session && !isAdmin) {
+    toast({
+      title: "Access Denied",
+      description: "You need admin privileges to access this section.",
+      variant: "destructive",
+    });
+    navigate("/");
+    return null;
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -286,3 +299,4 @@ export const AdminDashboard = () => {
     </div>
   );
 };
+
