@@ -1,6 +1,7 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
@@ -11,6 +12,32 @@ export function useAdminPrizes(
   page: number,
   entriesPerPage: number
 ) {
+  const queryClient = useQueryClient();
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('prizes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'prizes'
+        },
+        () => {
+          // Invalidate and refetch queries when changes occur
+          queryClient.invalidateQueries({ queryKey: ["prizes"] });
+          queryClient.invalidateQueries({ queryKey: ["prizes-count"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const { data: prizes, isLoading: isPrizesLoading } = useQuery({
     queryKey: ["prizes", sortColumn, sortDirection, page],
     queryFn: async () => {
