@@ -66,6 +66,12 @@ export const AdminLogin = () => {
     }
   };
 
+  const handleBackToHome = () => {
+    // Clear any lingering session data before navigating
+    supabase.auth.clearSession();
+    navigate("/");
+  };
+
   return (
     <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
@@ -131,7 +137,7 @@ export const AdminLogin = () => {
           type="button" 
           variant="outline" 
           className="w-full"
-          onClick={() => navigate("/")}
+          onClick={handleBackToHome}
         >
           Back to Home
         </Button>
