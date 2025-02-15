@@ -3,8 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Wine } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { LotteryEntryForm } from "./LotteryEntryForm";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const LotteryTab = () => {
+  const { data: lotteryStatus } = useQuery({
+    queryKey: ["lottery-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lottery_status")
+        .select("*")
+        .eq("date", new Date().toISOString().split("T")[0])
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
@@ -26,10 +42,22 @@ export const LotteryTab = () => {
           <CountdownTimer />
         </div>
 
-        <div className="max-w-md mx-auto">
-          <h3 className="text-xl font-semibold mb-4">Enter the Lottery</h3>
-          <LotteryEntryForm />
-        </div>
+        {lotteryStatus?.is_locked ? (
+          <div className="max-w-md mx-auto text-center p-6 bg-yellow-50 rounded-lg">
+            <h3 className="text-xl font-semibold mb-2 text-yellow-800">
+              Lottery Entries Closed
+            </h3>
+            <p className="text-yellow-700">
+              The lottery is currently locked for the upcoming draw. Please check
+              back later for the results!
+            </p>
+          </div>
+        ) : (
+          <div className="max-w-md mx-auto">
+            <h3 className="text-xl font-semibold mb-4">Enter the Lottery</h3>
+            <LotteryEntryForm />
+          </div>
+        )}
       </div>
     </div>
   );
