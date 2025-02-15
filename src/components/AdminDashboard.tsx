@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "./admin/AdminHeader";
 import { AdminStats } from "./admin/AdminStats";
@@ -18,6 +19,7 @@ type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 export const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useAuthStatus();
   const lotteryStatus = useLotteryStatus();
   const { todayEntries: entries } = useLotteryEntries();
@@ -48,36 +50,19 @@ export const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      // First check if we have a session
-      const { data: { session } } = await supabase.auth.getSession();
+      // Always clear local storage first
+      localStorage.clear();
       
-      if (!session) {
-        // If no session exists, just reload the page to clear any state
-        window.location.reload();
-        return;
-      }
-
-      // If we have a session, try to sign out
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Logout error:", error);
-        // If the error is session_not_found, just reload
-        if (error.message.includes("session_not_found")) {
-          window.location.reload();
-          return;
-        }
-        toast({
-          title: "Error",
-          description: "Failed to log out. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        // Successful logout, reload the page
-        window.location.reload();
-      }
+      // Attempt to sign out without checking session first
+      await supabase.auth.signOut();
+      
+      // Regardless of the outcome, navigate to home and force reload
+      navigate("/");
+      window.location.reload();
     } catch (error) {
       console.error("Logout error:", error);
-      // Force a page refresh to clear any lingering state
+      // Even if there's an error, clear everything and redirect
+      navigate("/");
       window.location.reload();
     }
   };
