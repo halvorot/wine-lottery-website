@@ -62,26 +62,38 @@ export function useEntryManagement() {
         throw new Error("No authenticated user found");
       }
 
-      if (existingEntry) {
+      // Check for existing entry one more time before submitting
+      const existingEntryCheck = await checkExistingEntry(entry.email);
+      
+      if (existingEntryCheck) {
+        // Update existing entry
         const { error } = await supabase
           .from("lottery_entries")
           .update({
             name: entry.name,
             num_tickets: entry.num_tickets,
           })
-          .eq("id", existingEntry.id)
-          .eq("created_by", userId);
+          .eq("id", existingEntryCheck.id);
 
         if (error) throw error;
+        
+        // Update local state to reflect the changes
+        setExistingEntry({
+          ...existingEntryCheck,
+          name: entry.name,
+          num_tickets: entry.num_tickets,
+        });
       } else {
-        const { error } = await supabase.from("lottery_entries").insert([
-          {
+        // Insert new entry
+        const { error } = await supabase
+          .from("lottery_entries")
+          .insert([{
             name: entry.name,
             email: entry.email,
             num_tickets: entry.num_tickets,
             created_by: userId,
-          },
-        ]);
+          }]);
+
         if (error) throw error;
       }
     },
