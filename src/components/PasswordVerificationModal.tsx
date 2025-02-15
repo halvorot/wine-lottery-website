@@ -30,11 +30,15 @@ export function PasswordVerificationModal({
     setIsLoading(true);
 
     try {
-      // For demo purposes, hardcode the daily password
-      // In a real app, this would be fetched from a secure backend
+      // For demo purposes, hardcode the daily passwords
+      // In a real app, these would be fetched from a secure backend
       const DAILY_PASSWORD = "wine2024";
+      const ADMIN_PASSWORD = "admin2024";
 
-      if (password === DAILY_PASSWORD) {
+      const isAdmin = password === ADMIN_PASSWORD;
+      const isValidPassword = password === DAILY_PASSWORD || isAdmin;
+
+      if (isValidPassword) {
         // Check if already verified today
         const today = new Date().toISOString().split("T")[0];
         const { data: existingVerification } = await supabase
@@ -56,7 +60,7 @@ export function PasswordVerificationModal({
         // Not verified today, create new verification
         const { error } = await supabase
           .from("password_verifications")
-          .insert([{ user_ip: "127.0.0.1" }]);
+          .insert([{ is_admin: isAdmin }]);
 
         if (error) {
           throw error;
@@ -64,7 +68,9 @@ export function PasswordVerificationModal({
 
         toast({
           title: "Success",
-          description: "Password verified successfully!",
+          description: `Password verified successfully! ${
+            isAdmin ? "(Admin access granted)" : ""
+          }`,
         });
         onVerified();
       } else {

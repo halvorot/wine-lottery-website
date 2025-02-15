@@ -124,18 +124,21 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_admin: boolean | null
           user_ip: string
           verified_date: string
         }
         Insert: {
           created_at?: string | null
           id?: string
+          is_admin?: boolean | null
           user_ip: string
           verified_date?: string
         }
         Update: {
           created_at?: string | null
           id?: string
+          is_admin?: boolean | null
           user_ip?: string
           verified_date?: string
         }
@@ -179,7 +182,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
