@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "./admin/AdminHeader";
 import { AdminStats } from "./admin/AdminStats";
@@ -28,6 +28,19 @@ export const AdminDashboard = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
+
+  // Check for valid session when component mounts
+  useEffect(() => {
+    const validateSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        console.error("Session validation error:", error);
+        handleLogout();
+      }
+    };
+
+    validateSession();
+  }, []); // Run only when component mounts
 
   const { prizes, isPrizesLoading, totalPrizes } = useAdminPrizes(
     sortColumn,
