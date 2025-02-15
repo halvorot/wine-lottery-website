@@ -26,21 +26,21 @@ const CountdownTimer = () => {
   }, []);
 
   return (
-    <div className="flex gap-4 text-4xl font-bold text-charcoal">
+    <div className="flex gap-4 text-4xl font-bold text-charcoal justify-center">
       <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px]">
+        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
           {String(time.hours).padStart(2, "0")}
         </span>
         <span className="text-sm mt-2">Hours</span>
       </div>
       <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px]">
+        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
           {String(time.minutes).padStart(2, "0")}
         </span>
         <span className="text-sm mt-2">Minutes</span>
       </div>
       <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px]">
+        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
           {String(time.seconds).padStart(2, "0")}
         </span>
         <span className="text-sm mt-2">Seconds</span>
@@ -69,8 +69,8 @@ const LiveTicker = () => {
 const Index = () => {
   return (
     <div className="min-h-screen bg-white text-charcoal">
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="lottery" className="w-full">
+      <main className="container mx-auto px-4 py-8 flex flex-col items-center">
+        <Tabs defaultValue="lottery" className="w-full max-w-4xl">
           <TabsList className="grid w-full grid-cols-3 max-w-[400px] mx-auto mb-8">
             <TabsTrigger value="lottery">Lottery</TabsTrigger>
             <TabsTrigger value="live">Live Draw</TabsTrigger>
@@ -95,7 +95,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg w-full">
               <div className="text-center space-y-8">
                 <h2 className="text-2xl font-semibold">Next Draw In</h2>
                 <CountdownTimer />
