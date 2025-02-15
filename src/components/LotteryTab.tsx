@@ -3,18 +3,39 @@ import { Button } from "@/components/ui/button";
 import { Wine } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { LotteryEntryForm } from "./LotteryEntryForm";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const LotteryTab = () => {
+  const queryClient = useQueryClient();
+
   const { data: lotteryStatus } = useQuery({
     queryKey: ["lottery-status"],
     queryFn: async () => {
+      // First try to get today's lottery status
+      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("lottery_status")
         .select("*")
-        .eq("date", new Date().toISOString().split("T")[0])
+        .eq("date", today)
         .single();
+
+      // If no status exists for today, create one
+      if (error?.code === "PGRST116") {
+        const { data: newStatus, error: createError } = await supabase
+          .from("lottery_status")
+          .insert([
+            {
+              date: today,
+              is_locked: false,
+            },
+          ])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        return newStatus;
+      }
 
       if (error) throw error;
       return data;
