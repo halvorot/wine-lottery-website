@@ -87,21 +87,21 @@ export type Database = {
           draw_date: string
           entry_id: string
           id: string
-          prize_description: string
+          prize_id: string | null
         }
         Insert: {
           created_at?: string
           draw_date?: string
           entry_id: string
           id?: string
-          prize_description: string
+          prize_id?: string | null
         }
         Update: {
           created_at?: string
           draw_date?: string
           entry_id?: string
           id?: string
-          prize_description?: string
+          prize_id?: string | null
         }
         Relationships: [
           {
@@ -111,7 +111,47 @@ export type Database = {
             referencedRelation: "lottery_entries"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lottery_winners_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "prizes"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      prizes: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          draw_date: string
+          id: string
+          name: string
+          quantity: number
+          remaining_quantity: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          draw_date?: string
+          id?: string
+          name: string
+          quantity: number
+          remaining_quantity: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          draw_date?: string
+          id?: string
+          name?: string
+          quantity?: number
+          remaining_quantity?: number
+        }
+        Relationships: []
       }
     }
     Views: {
