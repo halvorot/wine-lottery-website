@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,15 +6,33 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { EntryForm } from "./lottery/EntryForm";
 import { EntriesTable } from "./lottery/EntriesTable";
 import { LotteryEntry, SortColumn, SortDirection } from "./lottery/types";
+import { useEffect } from "react";
 
 export function LotteryEntryForm() {
   const [existingEntry, setExistingEntry] = useState<LotteryEntry | null>(null);
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const entriesPerPage = 10;
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Query lottery status
   const { data: lotteryStatus } = useQuery({
@@ -118,8 +137,8 @@ export function LotteryEntryForm() {
       email: string;
       num_tickets: number;
     }) => {
-      const session = await supabase.auth.getSession();
-      const userId = session.data.session?.user?.id;
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
 
       if (!userId) {
         throw new Error("No authenticated user found");
@@ -133,7 +152,9 @@ export function LotteryEntryForm() {
             name: entry.name,
             num_tickets: entry.num_tickets,
           })
-          .eq("id", existingEntry.id);
+          .eq("id", existingEntry.id)
+          .eq("created_by", userId); // Ensure user can only update their own entries
+
         if (error) throw error;
       } else {
         // Insert new entry
@@ -166,6 +187,16 @@ export function LotteryEntryForm() {
       console.error("Entry error:", error);
     },
   });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+        <p className="text-yellow-800">
+          Please sign in to submit or view lottery entries.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
