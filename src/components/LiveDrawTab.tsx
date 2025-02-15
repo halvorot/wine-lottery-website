@@ -1,3 +1,4 @@
+
 import { Trophy } from "lucide-react";
 import { LiveTicker } from "./LiveTicker";
 import { useQuery } from "@tanstack/react-query";
@@ -179,11 +180,11 @@ export const LiveDrawTab = () => {
                   <Badge 
                     variant={getBadgeVariant(prize.remaining_quantity, prize.quantity)}
                     className={cn(
-                      "absolute -top-2 -right-2 rounded-full px-3 py-1 font-semibold",
+                      "absolute -top-2 -right-2 min-w-[1.8rem] h-[1.8rem] flex items-center justify-center rounded-full px-1.5 text-xs font-bold shadow-sm",
                       prize.remaining_quantity === 0 ? "animate-pulse" : ""
                     )}
                   >
-                    {prize.remaining_quantity} left
+                    {prize.remaining_quantity}
                   </Badge>
                   <h3 className="text-xl font-semibold mb-2">
                     {index === 0
