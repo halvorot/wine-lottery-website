@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Timer, Trophy, Users, Lock, Unlock } from "lucide-react";
 import { AddPrizeForm } from "@/components/AddPrizeForm";
@@ -6,7 +5,8 @@ import { PrizesTable } from "@/components/admin/PrizesTable";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 type LotteryStatus = {
   id: string;
@@ -21,11 +21,47 @@ type SortDirection = "asc" | "desc";
 
 export const AdminDashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
   const entriesPerPage = 10;
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("is_admin");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      
+      if (!isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "You need admin privileges to access this section.",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    };
+
+    checkAuth();
+  }, [isAdmin, navigate, toast]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const { data: lotteryStatus, isLoading: isStatusLoading } = useQuery({
     queryKey: ["lottery-status"],
@@ -147,6 +183,10 @@ export const AdminDashboard = () => {
     },
   });
 
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg">
       <div className="flex items-center justify-between mb-8">
@@ -173,6 +213,9 @@ export const AdminDashboard = () => {
           </Button>
           <Button className="bg-wine hover:bg-wine-light text-white">
             Draw Winner
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Sign Out
           </Button>
         </div>
       </div>

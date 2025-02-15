@@ -38,11 +38,10 @@ export function AddPrizeForm() {
   const onSubmit = async (data: PrizeFormData) => {
     try {
       setIsLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
+      
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast({
           title: "Error",
           description: "You must be logged in to add prizes",
@@ -57,7 +56,7 @@ export function AddPrizeForm() {
         quantity: data.quantity,
         remaining_quantity: data.quantity,
         draw_date: data.drawDate,
-        created_by: user.id,
+        created_by: session.user.id,
       });
 
       if (error) throw error;
@@ -69,6 +68,7 @@ export function AddPrizeForm() {
 
       form.reset();
     } catch (error) {
+      console.error("Error adding prize:", error);
       toast({
         title: "Error",
         description: "Failed to add prize. Please try again.",
