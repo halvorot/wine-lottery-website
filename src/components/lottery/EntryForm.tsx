@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LotteryEntry } from "./types";
@@ -29,8 +28,13 @@ export function EntryForm({
     onSubmit({ 
       name, 
       email, 
-      num_tickets: numTickets // Changed from numTickets to num_tickets to match the type
+      num_tickets: numTickets
     });
+  };
+
+  const handleLocalEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    handleEmailChange(e);
   };
 
   return (
@@ -43,11 +47,10 @@ export function EntryForm({
           id="email"
           type="email"
           value={email}
-          onChange={handleEmailChange}
+          onChange={handleLocalEmailChange}
           required
           placeholder="Your email"
           className="w-full"
-          disabled={existingEntry !== null}
         />
       </div>
 
