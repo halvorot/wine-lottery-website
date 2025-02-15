@@ -186,7 +186,7 @@ export function LotteryEntryForm() {
         </div>
       )}
 
-      {todayEntries && todayEntries.length > 0 && (
+      {todayEntries && (
         <EntriesTable
           entries={todayEntries}
           sortColumn={sortColumn}
