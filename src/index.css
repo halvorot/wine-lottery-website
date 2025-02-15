@@ -28,7 +28,7 @@
   }
 
   * {
-    @apply border-border antialiased;
+    @apply border-[hsl(var(--border))] antialiased;
   }
 
   body {
