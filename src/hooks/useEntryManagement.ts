@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { LotteryEntry } from "@/components/lottery/types";
 
 export function useEntryManagement() {
@@ -85,13 +85,12 @@ export function useEntryManagement() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["today-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-entries"] });
       toast({
-        title: "Success",
-        description: existingEntry
-          ? "Entry updated successfully!"
-          : "Entry submitted successfully!",
+        title: existingEntry ? "Entry Updated!" : "Entry Submitted!",
+        description: `${variables.name} is now entered in today's lottery with ${variables.num_tickets} ticket${variables.num_tickets !== 1 ? 's' : ''}. Good luck! 🍷`,
       });
     },
     onError: (error) => {

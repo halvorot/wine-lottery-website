@@ -1,24 +1,12 @@
 
 import { EntryForm } from "./lottery/EntryForm";
-import { EntriesTable } from "./lottery/EntriesTable";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
-import { useLotteryEntries } from "@/hooks/useLotteryEntries";
 import { useEntryManagement } from "@/hooks/useEntryManagement";
 import { useLotteryStatus } from "@/hooks/useLotteryStatus";
 
 export function LotteryEntryForm() {
   const isAuthenticated = useAuthStatus();
-  const entriesPerPage = 10;
   const lotteryStatus = useLotteryStatus();
-  const {
-    todayEntries,
-    totalCount,
-    sortColumn,
-    sortDirection,
-    page,
-    setPage,
-    handleSort,
-  } = useLotteryEntries(entriesPerPage);
   const {
     existingEntry,
     handleEmailChange,
@@ -60,19 +48,6 @@ export function LotteryEntryForm() {
             Today's lottery entries are currently locked. No new entries can be submitted.
           </p>
         </div>
-      )}
-
-      {todayEntries && (
-        <EntriesTable
-          entries={todayEntries}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          page={page}
-          totalCount={totalCount}
-          entriesPerPage={entriesPerPage}
-          onPageChange={setPage}
-        />
       )}
     </div>
   );
