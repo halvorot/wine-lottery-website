@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CreateLotteryDialog } from "./CreateLotteryDialog";
-import { Loader2, Trash2, ChevronDown, Table } from "lucide-react";
+import { Loader2, Trash2, Table } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,11 +21,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Table as UITable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { DataTable } from "../table/DataTable";
 import { Lock, Unlock } from "lucide-react";
-import { useToggleLottery } from "@/hooks/use-toggle-lottery";
+import { useToggleLottery } from "@/hooks/useToggleLottery";
 
 interface Lottery {
   id: string;
