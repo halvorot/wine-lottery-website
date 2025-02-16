@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { Table as UITable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
+import { DataTable } from "../table/DataTable";
 
 interface Lottery {
   id: string;
@@ -125,7 +125,80 @@ export function LotteriesSection() {
   });
 
   const LotteryDetails = ({ lottery }: { lottery: Lottery }) => {
+    const [prizesPage, setPrizesPage] = useState(1);
+    const [entriesPage, setEntriesPage] = useState(1);
+    const [prizeSort, setPrizeSort] = useState<{ column: string; direction: "asc" | "desc" }>({
+      column: "name",
+      direction: "asc",
+    });
+    const [entrySort, setEntrySort] = useState<{ column: string; direction: "asc" | "desc" }>({
+      column: "created_at",
+      direction: "desc",
+    });
+    const entriesPerPage = 5;
+
     const { prizes, entries } = useLotteryDetails(lottery.id);
+
+    const handlePrizeSort = (column: string) => {
+      setPrizeSort((prev) => ({
+        column,
+        direction: prev.column === column && prev.direction === "asc" ? "desc" : "asc",
+      }));
+      setPrizesPage(1);
+    };
+
+    const handleEntrySort = (column: string) => {
+      setEntrySort((prev) => ({
+        column,
+        direction: prev.column === column && prev.direction === "asc" ? "desc" : "asc",
+      }));
+      setEntriesPage(1);
+    };
+
+    const sortedPrizes = prizes?.sort((a, b) => {
+      const aValue = (a as any)[prizeSort.column];
+      const bValue = (b as any)[prizeSort.column];
+      return prizeSort.direction === "asc" 
+        ? aValue > bValue ? 1 : -1
+        : aValue < bValue ? 1 : -1;
+    });
+
+    const sortedEntries = entries?.sort((a, b) => {
+      const aValue = (a as any)[entrySort.column];
+      const bValue = (b as any)[entrySort.column];
+      return entrySort.direction === "asc"
+        ? aValue > bValue ? 1 : -1
+        : aValue < bValue ? 1 : -1;
+    });
+
+    const paginatedPrizes = sortedPrizes?.slice(
+      (prizesPage - 1) * entriesPerPage,
+      prizesPage * entriesPerPage
+    );
+
+    const paginatedEntries = sortedEntries?.slice(
+      (entriesPage - 1) * entriesPerPage,
+      entriesPage * entriesPerPage
+    );
+
+    const prizeColumns = [
+      { key: "name", label: "Name", sortable: true },
+      { key: "description", label: "Description" },
+      { key: "quantity", label: "Quantity", sortable: true },
+      { key: "remaining_quantity", label: "Remaining" },
+    ];
+
+    const entryColumns = [
+      { key: "name", label: "Name", sortable: true },
+      { key: "email", label: "Email", sortable: true },
+      { key: "num_tickets", label: "Tickets", sortable: true },
+      { 
+        key: "created_at", 
+        label: "Entry Time", 
+        sortable: true,
+        render: (entry: Entry) => format(new Date(entry.created_at), "PPP p")
+      },
+    ];
 
     return (
       <div className="space-y-6 py-4">
@@ -134,33 +207,17 @@ export function LotteriesSection() {
             <Table className="h-4 w-4" />
             <h4 className="font-semibold">Prizes</h4>
           </div>
-          <UITable>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Remaining</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {prizes?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No prizes found
-                  </TableCell>
-                </TableRow>
-              )}
-              {prizes?.map((prize) => (
-                <TableRow key={prize.id}>
-                  <TableCell>{prize.name}</TableCell>
-                  <TableCell>{prize.description || "-"}</TableCell>
-                  <TableCell>{prize.quantity}</TableCell>
-                  <TableCell>{prize.remaining_quantity}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </UITable>
+          <DataTable
+            data={paginatedPrizes || []}
+            columns={prizeColumns}
+            sortColumn={prizeSort.column}
+            sortDirection={prizeSort.direction}
+            onSort={handlePrizeSort}
+            page={prizesPage}
+            totalCount={prizes?.length || 0}
+            entriesPerPage={entriesPerPage}
+            onPageChange={setPrizesPage}
+          />
         </div>
 
         <div className="space-y-4">
@@ -168,33 +225,17 @@ export function LotteriesSection() {
             <Table className="h-4 w-4" />
             <h4 className="font-semibold">Entries</h4>
           </div>
-          <UITable>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Tickets</TableHead>
-                <TableHead>Entry Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {entries?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    No entries found
-                  </TableCell>
-                </TableRow>
-              )}
-              {entries?.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>{entry.name}</TableCell>
-                  <TableCell>{entry.email}</TableCell>
-                  <TableCell>{entry.num_tickets}</TableCell>
-                  <TableCell>{format(new Date(entry.created_at), "PPP p")}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </UITable>
+          <DataTable
+            data={paginatedEntries || []}
+            columns={entryColumns}
+            sortColumn={entrySort.column}
+            sortDirection={entrySort.direction}
+            onSort={handleEntrySort}
+            page={entriesPage}
+            totalCount={entries?.length || 0}
+            entriesPerPage={entriesPerPage}
+            onPageChange={setEntriesPage}
+          />
         </div>
       </div>
     );
