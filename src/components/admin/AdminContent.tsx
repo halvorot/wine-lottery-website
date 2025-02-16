@@ -3,6 +3,7 @@ import { AdminHeader } from "./AdminHeader";
 import { AdminStats } from "./AdminStats";
 import { PrizesSection } from "./PrizesSection";
 import { EntriesSection } from "./EntriesSection";
+import { LotteriesSection } from "./lotteries/LotteriesSection";
 import { useLotteryStatus } from "@/hooks/useLotteryStatus";
 import { useAdminPrizes } from "@/hooks/useAdminPrizes";
 import { useLotteryEntries } from "@/hooks/useLotteryEntries";
@@ -64,6 +65,8 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
       />
 
       <div className="space-y-16">
+        <LotteriesSection />
+
         <PrizesSection
           prizes={prizes || []}
           isLoading={isPrizesLoading}
