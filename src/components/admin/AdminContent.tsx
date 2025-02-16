@@ -42,7 +42,7 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
   } = useLotteryEntries();
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg">
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg space-y-12">
       <AdminHeader
         isLocked={lotteryStatus?.is_locked || false}
         isLoading={!lotteryStatus}
@@ -56,21 +56,23 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
         prizesCount={totalPrizes || 0}
       />
 
-      <PrizesSection
-        prizes={prizes || []}
-        isLoading={isPrizesLoading}
-        sortColumn={sortColumn}
-        sortDirection={sortDirection}
-        page={page}
-        totalCount={totalPrizes || 0}
-        entriesPerPage={entriesPerPage}
-        onSort={handleSort}
-        onPageChange={setPage}
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-      />
+      <div className="space-y-16">
+        <PrizesSection
+          prizes={prizes || []}
+          isLoading={isPrizesLoading}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          page={page}
+          totalCount={totalPrizes || 0}
+          entriesPerPage={entriesPerPage}
+          onSort={handleSort}
+          onPageChange={setPage}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+        />
 
-      <EntriesSection entries={entries || []} />
+        <EntriesSection entries={entries || []} />
+      </div>
     </div>
   );
 };
