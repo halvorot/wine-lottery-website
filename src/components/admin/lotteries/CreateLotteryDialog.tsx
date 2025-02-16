@@ -112,7 +112,7 @@ export function CreateLotteryDialog() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-auto p-0" 
+                className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" 
                 align="start"
               >
                 <Calendar
