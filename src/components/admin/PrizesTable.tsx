@@ -55,6 +55,10 @@ export function PrizesTable({
   const [selectedPrize, setSelectedPrize] = useState<Prize | null>(null);
   const { toast } = useToast();
   const totalPages = Math.ceil(totalCount / entriesPerPage);
+  
+  // Calculate the range of items being displayed
+  const startIndex = totalCount === 0 ? 0 : ((page - 1) * entriesPerPage) + 1;
+  const endIndex = Math.min(page * entriesPerPage, totalCount);
 
   const handleDeleteClick = (prize: Prize) => {
     setSelectedPrize(prize);
@@ -100,7 +104,6 @@ export function PrizesTable({
 
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-4">Prize List</h3>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -123,46 +126,58 @@ export function PrizesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {prizes.map((prize) => (
-              <TableRow key={prize.id}>
-                <TableCell>{prize.name}</TableCell>
-                <TableCell>{prize.description || "-"}</TableCell>
-                <TableCell>{prize.quantity}</TableCell>
-                <TableCell>{prize.remaining_quantity}</TableCell>
-                <TableCell>{format(new Date(prize.draw_date), "PPP")}</TableCell>
-                <TableCell>{format(new Date(prize.created_at), "PPP")}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteClick(prize)}
-                    className="text-destructive hover:text-destructive/90"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+            {prizes.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  No prizes found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              prizes.map((prize) => (
+                <TableRow key={prize.id}>
+                  <TableCell>{prize.name}</TableCell>
+                  <TableCell>{prize.description || "-"}</TableCell>
+                  <TableCell>{prize.quantity}</TableCell>
+                  <TableCell>{prize.remaining_quantity}</TableCell>
+                  <TableCell>{format(new Date(prize.draw_date), "PPP")}</TableCell>
+                  <TableCell>{format(new Date(prize.created_at), "PPP")}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(prize)}
+                      className="text-destructive hover:text-destructive/90"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
 
       <div className="flex justify-between items-center mt-4">
         <div className="text-sm text-muted-foreground">
-          Showing {((page - 1) * entriesPerPage) + 1} to {Math.min(page * entriesPerPage, totalCount)} of {totalCount} prizes
+          {totalCount === 0 ? (
+            "No prizes found"
+          ) : (
+            `Showing ${startIndex} to ${endIndex} of ${totalCount} prizes`
+          )}
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => onPageChange(Math.max(1, page - 1))}
-            disabled={page === 1}
+            disabled={page === 1 || totalCount === 0}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
+            disabled={page >= totalPages || totalCount === 0}
           >
             Next
           </Button>
