@@ -3,10 +3,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowUpDown, CalendarIcon } from "lucide-react";
+import { ArrowUpDown, CalendarIcon, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SortColumn, SortDirection } from "@/components/lottery/types";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Entry {
   id: string;
@@ -37,6 +50,9 @@ export const EntriesSection = ({
   selectedDate,
   onDateChange,
 }: EntriesSectionProps) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const { toast } = useToast();
   const entriesPerPage = 10;
   const totalEntries = entries.length;
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
@@ -60,6 +76,36 @@ export const EntriesSection = ({
 
   const handleShowAllDates = () => {
     onDateChange("all");
+  };
+
+  const handleDeleteClick = (entry: Entry) => {
+    setSelectedEntry(entry);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedEntry) return;
+
+    const { error } = await supabase
+      .from("lottery_entries")
+      .delete()
+      .eq("id", selectedEntry.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete the entry. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Delete error:", error);
+    } else {
+      toast({
+        title: "Success",
+        description: "Entry deleted successfully",
+      });
+    }
+    setDeleteDialogOpen(false);
+    setSelectedEntry(null);
   };
 
   const renderSortIcon = (column: SortColumn) => {
@@ -132,12 +178,13 @@ export const EntriesSection = ({
               <TableHead className="cursor-pointer">
                 Entry Time {renderSortIcon("created_at")}
               </TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {entries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No entries found
                 </TableCell>
               </TableRow>
@@ -149,6 +196,16 @@ export const EntriesSection = ({
                   <TableCell>{entry.num_tickets}</TableCell>
                   <TableCell>
                     {format(new Date(entry.created_at), "PPP p")}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(entry)}
+                      className="text-destructive hover:text-destructive/90"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -181,6 +238,26 @@ export const EntriesSection = ({
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedEntry?.name}'s entry. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
