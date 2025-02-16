@@ -66,7 +66,13 @@ export const LiveDrawTab = () => {
         .rpc('get_lottery_stats', { target_date: today });
 
       if (error) throw error;
-      return data as LotteryStats;
+      // Since the RPC returns an array with a single row, we take the first item
+      return (data && data[0]) || { 
+        total_entries: 0, 
+        total_tickets: 0, 
+        total_prizes: 0, 
+        remaining_prizes: 0 
+      };
     },
   });
 
