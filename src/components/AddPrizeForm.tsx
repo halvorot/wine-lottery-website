@@ -15,26 +15,47 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { useActiveLottery } from "@/hooks/useActiveLottery";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type PrizeFormData = {
   name: string;
   description: string;
   quantity: number;
-  drawDate: string;
+  lotteryId: string;
 };
 
 export function AddPrizeForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { data: activeLottery } = useActiveLottery();
+
+  // Fetch all active and upcoming lotteries
+  const { data: lotteries } = useQuery({
+    queryKey: ["active-lotteries"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("lotteries")
+        .select("*")
+        .eq("is_completed", false)
+        .order("draw_date", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
   
   const form = useForm<PrizeFormData>({
     defaultValues: {
       name: "",
       description: "",
       quantity: 1,
-      drawDate: new Date().toISOString().split("T")[0],
+      lotteryId: "",
     },
   });
 
@@ -42,14 +63,23 @@ export function AddPrizeForm() {
     try {
       setIsLoading(true);
       
-      if (!activeLottery) {
+      if (!data.lotteryId) {
         toast({
           title: "Error",
-          description: "No active lottery found. Please create a lottery first.",
+          description: "Please select a lottery",
           variant: "destructive",
         });
         return;
       }
+
+      // Get the lottery to access its draw date
+      const { data: lottery, error: lotteryError } = await supabase
+        .from("lotteries")
+        .select("draw_date")
+        .eq("id", data.lotteryId)
+        .single();
+
+      if (lotteryError) throw lotteryError;
       
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
@@ -67,9 +97,9 @@ export function AddPrizeForm() {
         description: data.description,
         quantity: data.quantity,
         remaining_quantity: data.quantity,
-        draw_date: data.drawDate,
+        draw_date: lottery.draw_date,
         created_by: session.user.id,
-        lottery_id: activeLottery.id
+        lottery_id: data.lotteryId
       });
 
       if (error) throw error;
@@ -92,11 +122,11 @@ export function AddPrizeForm() {
     }
   };
 
-  if (!activeLottery) {
+  if (!lotteries || lotteries.length === 0) {
     return (
       <div className="text-center p-4 bg-yellow-50 rounded-lg">
         <p className="text-yellow-800">
-          No active lottery found. Please create a lottery first.
+          No active lotteries found. Please create a lottery first.
         </p>
       </div>
     );
@@ -157,13 +187,24 @@ export function AddPrizeForm() {
 
         <FormField
           control={form.control}
-          name="drawDate"
+          name="lotteryId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Draw Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
+              <FormLabel>Lottery</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a lottery" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {lotteries.map((lottery) => (
+                    <SelectItem key={lottery.id} value={lottery.id}>
+                      Draw date: {new Date(lottery.draw_date).toLocaleDateString()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
