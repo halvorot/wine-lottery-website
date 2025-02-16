@@ -52,7 +52,7 @@ export function CreateLotteryDialog() {
           draw_date: drawDate.toISOString().split('T')[0],
           is_active: true,
           created_by: userData.user.id,
-          is_completed: false, // explicitly set is_completed
+          is_completed: false,
         })
         .select()
         .single();
@@ -62,7 +62,7 @@ export function CreateLotteryDialog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-lottery"] });
-      queryClient.invalidateQueries({ queryKey: ["lotteries"] }); // Also invalidate the lotteries list
+      queryClient.invalidateQueries({ queryKey: ["lotteries"] });
       setOpen(false);
       toast({
         title: "Success",
@@ -83,6 +83,11 @@ export function CreateLotteryDialog() {
     createLotteryMutation.mutate();
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    console.log("Date selected:", date);
+    setDrawDate(date);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -101,6 +106,7 @@ export function CreateLotteryDialog() {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  id="drawDate"
                   variant="outline"
                   className={cn(
                     "justify-start text-left font-normal",
@@ -112,18 +118,20 @@ export function CreateLotteryDialog() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" 
+                className="w-auto p-0 bg-white z-[100] shadow-lg border rounded-md" 
                 align="start"
+                side="bottom"
               >
                 <Calendar
                   mode="single"
                   selected={drawDate}
-                  onSelect={setDrawDate}
+                  onSelect={handleDateSelect}
                   disabled={(date) => {
                     const today = startOfDay(new Date());
                     return isBefore(date, today);
                   }}
                   initialFocus
+                  className="rounded-md border"
                 />
               </PopoverContent>
             </Popover>
