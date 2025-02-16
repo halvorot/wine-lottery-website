@@ -27,13 +27,17 @@ export const AdminDashboard = () => {
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<string | "all">(
+    new Date().toISOString().split("T")[0]
+  );
   const entriesPerPage = 10;
 
   const { prizes, isPrizesLoading, totalPrizes } = useAdminPrizes(
     sortColumn,
     sortDirection,
     page,
-    entriesPerPage
+    entriesPerPage,
+    selectedDate
   );
 
   const handleSort = (column: SortColumn) => {
@@ -96,6 +100,8 @@ export const AdminDashboard = () => {
         entriesPerPage={entriesPerPage}
         onSort={handleSort}
         onPageChange={setPage}
+        selectedDate={selectedDate}
+        onDateChange={setSelectedDate}
       />
 
       <EntriesSection entries={entries || []} />

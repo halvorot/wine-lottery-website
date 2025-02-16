@@ -10,10 +10,10 @@ export function useAdminPrizes(
   sortColumn: SortColumn,
   sortDirection: SortDirection,
   page: number,
-  entriesPerPage: number
+  entriesPerPage: number,
+  selectedDate: string | "all"
 ) {
   const queryClient = useQueryClient();
-  const today = new Date().toISOString().split('T')[0];
 
   // Set up real-time subscription
   useEffect(() => {
@@ -24,16 +24,15 @@ export function useAdminPrizes(
         {
           event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
-          table: 'prizes',
-          filter: `draw_date=eq.${today}`
+          table: 'prizes'
         },
         () => {
           // Invalidate and refetch queries when changes occur
           queryClient.invalidateQueries({ 
-            queryKey: ["prizes", sortColumn, sortDirection, page]
+            queryKey: ["prizes", sortColumn, sortDirection, page, selectedDate]
           });
           queryClient.invalidateQueries({ 
-            queryKey: ["prizes-count"]
+            queryKey: ["prizes-count", selectedDate]
           });
         }
       )
@@ -42,31 +41,39 @@ export function useAdminPrizes(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, sortColumn, sortDirection, page, today]);
+  }, [queryClient, sortColumn, sortDirection, page, selectedDate]);
 
   const { data: prizes, isLoading: isPrizesLoading } = useQuery({
-    queryKey: ["prizes", sortColumn, sortDirection, page],
+    queryKey: ["prizes", sortColumn, sortDirection, page, selectedDate],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("prizes")
         .select("*", { count: "exact" })
-        .eq("draw_date", today)
         .order(sortColumn, { ascending: sortDirection === "asc" })
         .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
 
+      if (selectedDate !== "all") {
+        query = query.eq("draw_date", selectedDate);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
   });
 
   const { data: totalPrizes } = useQuery({
-    queryKey: ["prizes-count"],
+    queryKey: ["prizes-count", selectedDate],
     queryFn: async () => {
-      const { count, error } = await supabase
+      let query = supabase
         .from("prizes")
-        .select("*", { count: "exact", head: true })
-        .eq("draw_date", today);
+        .select("*", { count: "exact", head: true });
 
+      if (selectedDate !== "all") {
+        query = query.eq("draw_date", selectedDate);
+      }
+
+      const { count, error } = await query;
       if (error) throw error;
       return count || 0;
     },
