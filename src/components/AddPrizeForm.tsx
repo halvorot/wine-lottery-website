@@ -197,9 +197,13 @@ export function AddPrizeForm() {
                     <SelectValue placeholder="Select a lottery" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-gray-800 border shadow-lg">
                   {lotteries.map((lottery) => (
-                    <SelectItem key={lottery.id} value={lottery.id}>
+                    <SelectItem 
+                      key={lottery.id} 
+                      value={lottery.id}
+                      className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
                       Draw date: {new Date(lottery.draw_date).toLocaleDateString()}
                     </SelectItem>
                   ))}
