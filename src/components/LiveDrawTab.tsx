@@ -17,6 +17,13 @@ type Prize = Tables['prizes']['Row']
 type LotteryEntry = Tables['lottery_entries']['Row']
 type LotteryWinner = Tables['lottery_winners']['Row']
 
+interface LotteryStats {
+  total_entries: number;
+  total_tickets: number;
+  total_prizes: number;
+  remaining_prizes: number;
+}
+
 export const LiveDrawTab = () => {
   const { toast } = useToast();
   const { isAdmin } = useAuthStatus();
@@ -48,6 +55,18 @@ export const LiveDrawTab = () => {
 
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  const { data: lotteryStats } = useQuery<LotteryStats>({
+    queryKey: ["lottery-stats"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .rpc('get_lottery_stats', { target_date: today });
+
+      if (error) throw error;
+      return data as LotteryStats;
     },
   });
 
@@ -141,10 +160,36 @@ export const LiveDrawTab = () => {
     });
   };
 
+  const calculateWinningChance = (numTickets: number) => {
+    if (!lotteryStats || lotteryStats.total_tickets === 0) return 0;
+    return (numTickets / lotteryStats.total_tickets) * 100;
+  };
+
   return (
     <div className="space-y-8">
       <WinnerAnnouncement winner={lastWinner} />
       <LiveTicker />
+
+      {/* Lottery Statistics */}
+      <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Entries</h3>
+          <p className="text-2xl font-bold">{lotteryStats?.total_entries || 0}</p>
+        </div>
+        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Tickets</h3>
+          <p className="text-2xl font-bold">{lotteryStats?.total_tickets || 0}</p>
+        </div>
+        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Prizes</h3>
+          <p className="text-2xl font-bold">{lotteryStats?.total_prizes || 0}</p>
+        </div>
+        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
+          <h3 className="text-sm font-medium text-muted-foreground mb-1">Remaining Prizes</h3>
+          <p className="text-2xl font-bold">{lotteryStats?.remaining_prizes || 0}</p>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center space-y-8">
         <Trophy size={48} className="text-gold mx-auto" strokeWidth={1.5} />
         <h2 className="text-3xl font-bold">Today's Prize Pool</h2>
@@ -160,6 +205,7 @@ export const LiveDrawTab = () => {
             todayPrizes.map((prize, index) => {
               const prizeWinners = winners?.filter(w => w.prize_id === prize.id) || [];
               const isDrawn = prizeWinners.length > 0;
+              const baseChance = calculateWinningChance(1);
               
               return (
                 <div 
@@ -185,6 +231,11 @@ export const LiveDrawTab = () => {
                   <p>{prize.name}</p>
                   {prize.description && (
                     <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
+                  )}
+                  {!isDrawn && baseChance > 0 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Chance per ticket: {baseChance.toFixed(2)}%
+                    </p>
                   )}
                   {prizeWinners.length > 0 && (
                     <div className="mt-4 text-sm border-t border-gray-200 pt-2">

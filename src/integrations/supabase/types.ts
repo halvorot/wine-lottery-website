@@ -235,6 +235,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      get_lottery_stats: {
+        Args: {
+          target_date: string
+        }
+        Returns: {
+          total_entries: number
+          total_tickets: number
+          total_prizes: number
+          remaining_prizes: number
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
