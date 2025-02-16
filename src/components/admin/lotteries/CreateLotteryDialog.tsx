@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -111,14 +111,18 @@ export function CreateLotteryDialog() {
                   {drawDate ? format(drawDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" align="start">
+              <PopoverContent 
+                className="w-auto p-0" 
+                align="start"
+              >
                 <Calendar
                   mode="single"
                   selected={drawDate}
                   onSelect={setDrawDate}
-                  disabled={(date) =>
-                    date < new Date() || date < new Date("1900-01-01")
-                  }
+                  disabled={(date) => {
+                    const today = startOfDay(new Date());
+                    return isBefore(date, today);
+                  }}
                   initialFocus
                 />
               </PopoverContent>
