@@ -1,6 +1,6 @@
 
 import { AddPrizeForm } from "@/components/AddPrizeForm";
-import { PrizesTable } from "@/components/admin/PrizesTable";
+import { PrizesTable } from "@/components/admin/prizes/PrizesTable";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -60,7 +60,6 @@ export const PrizesSection = ({
   };
 
   const handleDateSelect = (newDate: Date | undefined) => {
-    // If newDate is undefined (deselection) or same as current date, ignore it
     if (!newDate || (date && format(newDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))) {
       return;
     }
@@ -76,46 +75,48 @@ export const PrizesSection = ({
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Prize List</h3>
-        <div className="flex items-center gap-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : "Pick a date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDateSelect}
-                initialFocus
-                className="bg-white"
-              />
-            </PopoverContent>
-          </Popover>
-          <Button 
-            variant="outline"
-            onClick={handleTodayClick}
-          >
-            Today
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setDate(undefined);
-              onDateChange("all");
-            }}
-          >
-            Show All Dates
-          </Button>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-semibold">Prize List</h3>
+          <div className="flex items-center gap-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                  className="bg-white"
+                />
+              </PopoverContent>
+            </Popover>
+            <Button 
+              variant="outline"
+              onClick={handleTodayClick}
+            >
+              Today
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setDate(undefined);
+                onDateChange("all");
+              }}
+            >
+              Show All Dates
+            </Button>
+          </div>
         </div>
 
         {!isLoading && (
