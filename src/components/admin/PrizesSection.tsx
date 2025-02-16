@@ -59,6 +59,15 @@ export const PrizesSection = ({
     onDateChange(format(today, "yyyy-MM-dd"));
   };
 
+  const handleDateSelect = (newDate: Date | undefined) => {
+    // If newDate is undefined (deselection) or same as current date, ignore it
+    if (!newDate || (date && format(newDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))) {
+      return;
+    }
+    setDate(newDate);
+    onDateChange(format(newDate, "yyyy-MM-dd"));
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-cream/50 rounded-lg p-6">
@@ -86,12 +95,7 @@ export const PrizesSection = ({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(newDate) => {
-                  setDate(newDate);
-                  if (newDate) {
-                    onDateChange(format(newDate, "yyyy-MM-dd"));
-                  }
-                }}
+                onSelect={handleDateSelect}
                 initialFocus
                 className="bg-white"
               />
