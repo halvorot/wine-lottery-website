@@ -9,6 +9,7 @@ import { useAdminPrizes } from "@/hooks/useAdminPrizes";
 import { useLotteryEntries } from "@/hooks/useLotteryEntries";
 import { useToggleLottery } from "@/hooks/useToggleLottery";
 import { useAdminState } from "@/hooks/useAdminState";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 interface AdminContentProps {
   onLogout: () => Promise<void>;
@@ -16,6 +17,7 @@ interface AdminContentProps {
 
 export const AdminContent = ({ onLogout }: AdminContentProps) => {
   const { data: lotteryStatus } = useLotteryStatus();
+  const { data: activeLottery } = useActiveLottery();
   const toggleLockMutation = useToggleLottery();
   const entriesPerPage = 10;
 
@@ -55,7 +57,11 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
         isLocked={lotteryStatus?.is_locked || false}
         isLoading={!lotteryStatus}
         isPending={toggleLockMutation.isPending}
-        onToggleLock={() => toggleLockMutation.mutate()}
+        onToggleLock={() => {
+          if (activeLottery?.id) {
+            toggleLockMutation.mutate(activeLottery.id);
+          }
+        }}
         onLogout={onLogout}
       />
 
