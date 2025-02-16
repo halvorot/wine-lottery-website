@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { format } from "date-fns";
 
 type PrizeFormData = {
   name: string;
@@ -204,7 +205,7 @@ export function AddPrizeForm() {
                       value={lottery.id}
                       className="hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      Draw date: {new Date(lottery.draw_date).toLocaleDateString()}
+                      Draw date: {format(new Date(lottery.draw_date), 'PPP')}
                     </SelectItem>
                   ))}
                 </SelectContent>
