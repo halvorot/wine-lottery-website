@@ -53,6 +53,12 @@ export const PrizesSection = ({
     selectedDate === "all" ? undefined : new Date(selectedDate)
   );
 
+  const handleTodayClick = () => {
+    const today = new Date();
+    setDate(today);
+    onDateChange(format(today, "yyyy-MM-dd"));
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-cream/50 rounded-lg p-6">
@@ -91,6 +97,12 @@ export const PrizesSection = ({
               />
             </PopoverContent>
           </Popover>
+          <Button 
+            variant="outline"
+            onClick={handleTodayClick}
+          >
+            Today
+          </Button>
           <Button 
             variant="outline" 
             onClick={() => {
