@@ -35,30 +35,22 @@ export function CreateLotteryDialog() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
-      // First check if there are any active lotteries
-      const { data: existingLotteries } = await supabase
-        .from("lotteries")
-        .select("id")
-        .eq("is_active", true)
-        .limit(1);
-
-      // If there are active lotteries, throw an error
-      if (existingLotteries && existingLotteries.length > 0) {
-        throw new Error("There is already an active lottery");
-      }
-
       const { data, error } = await supabase
         .from("lotteries")
         .insert({
           draw_date: drawDate.toISOString().split('T')[0],
-          is_active: true,
           created_by: userData.user.id,
           is_completed: false,
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          throw new Error("A lottery already exists for this date");
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -85,7 +77,6 @@ export function CreateLotteryDialog() {
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    console.log("Date selected:", date);
     if (date) {
       setDrawDate(date);
       setTimeout(() => setCalendarOpen(false), 100);
@@ -109,10 +100,7 @@ export function CreateLotteryDialog() {
             <Label htmlFor="drawDate">Draw Date</Label>
             <Popover 
               open={calendarOpen} 
-              onOpenChange={(open) => {
-                console.log("Calendar open state changing to:", open);
-                setCalendarOpen(open);
-              }}
+              onOpenChange={setCalendarOpen}
             >
               <PopoverTrigger asChild>
                 <Button
@@ -122,31 +110,25 @@ export function CreateLotteryDialog() {
                     "justify-start text-left font-normal",
                     !drawDate && "text-muted-foreground"
                   )}
-                  onClick={() => setCalendarOpen(true)}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {drawDate ? format(drawDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-auto p-0 bg-white z-[100] shadow-lg border rounded-md pointer-events-auto select-none" 
+                className="w-auto p-0 bg-white"
                 align="start"
-                side="bottom"
-                onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-0" onClick={(e) => e.stopPropagation()}>
-                  <Calendar
-                    mode="single"
-                    selected={drawDate}
-                    onSelect={handleDateSelect}
-                    disabled={(date) => {
-                      const today = startOfDay(new Date());
-                      return isBefore(date, today);
-                    }}
-                    initialFocus
-                    className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
-                  />
-                </div>
+                <Calendar
+                  mode="single"
+                  selected={drawDate}
+                  onSelect={handleDateSelect}
+                  disabled={(date) => {
+                    const today = startOfDay(new Date());
+                    return isBefore(date, today);
+                  }}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </div>
