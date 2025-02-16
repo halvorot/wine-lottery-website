@@ -39,17 +39,9 @@ export function DataTable<T>({
   const startIndex = totalCount === 0 ? 0 : ((page - 1) * entriesPerPage) + 1;
   const endIndex = Math.min(page * entriesPerPage, totalCount);
 
-  const renderSortIcon = (column: string) => {
-    if (!onSort) return null;
-    return (
-      <Button
-        variant="ghost"
-        onClick={() => onSort(column)}
-        className="h-8 px-2"
-      >
-        <ArrowUpDown className="h-4 w-4" />
-      </Button>
-    );
+  const handleSort = (column: string) => {
+    if (!onSort || !column) return;
+    onSort(column);
   };
 
   return (
@@ -61,9 +53,15 @@ export function DataTable<T>({
               {columns.map((column) => (
                 <TableHead 
                   key={column.key}
-                  className={column.sortable ? "cursor-pointer" : undefined}
+                  className={column.sortable ? "cursor-pointer select-none" : undefined}
+                  onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  {column.label} {column.sortable && renderSortIcon(column.key)}
+                  <div className="flex items-center gap-2">
+                    {column.label}
+                    {column.sortable && (
+                      <ArrowUpDown className="h-4 w-4" />
+                    )}
+                  </div>
                 </TableHead>
               ))}
               {renderActions && <TableHead className="w-[100px]">Actions</TableHead>}
