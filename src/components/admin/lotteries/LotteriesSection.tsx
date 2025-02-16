@@ -22,7 +22,6 @@ interface Lottery {
   id: string;
   draw_date: string;
   created_at: string;
-  is_active: boolean;
   is_completed: boolean;
 }
 
@@ -71,38 +70,6 @@ export function LotteriesSection() {
     },
   });
 
-  const toggleLotteryStatusMutation = useMutation({
-    mutationFn: async ({
-      lotteryId,
-      isActive,
-    }: {
-      lotteryId: string;
-      isActive: boolean;
-    }) => {
-      const { error } = await supabase
-        .from("lotteries")
-        .update({ is_active: isActive })
-        .eq("id", lotteryId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lotteries"] });
-      toast({
-        title: "Success",
-        description: "Lottery status updated successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating lottery status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update lottery status. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -131,20 +98,11 @@ export function LotteriesSection() {
               <p className="text-sm text-muted-foreground">
                 Created: {format(new Date(lottery.created_at), "PPP p")}
               </p>
+              <p className="text-sm">
+                Status: {lottery.is_completed ? "Completed" : "Upcoming"}
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant={lottery.is_active ? "default" : "outline"}
-                onClick={() =>
-                  toggleLotteryStatusMutation.mutate({
-                    lotteryId: lottery.id,
-                    isActive: !lottery.is_active,
-                  })
-                }
-                disabled={toggleLotteryStatusMutation.isPending}
-              >
-                {lottery.is_active ? "Active" : "Inactive"}
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"

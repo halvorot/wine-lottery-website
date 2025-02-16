@@ -54,7 +54,6 @@ export type Database = {
           created_by: string
           draw_date: string
           id: string
-          is_active: boolean
           is_completed: boolean
         }
         Insert: {
@@ -62,7 +61,6 @@ export type Database = {
           created_by: string
           draw_date: string
           id?: string
-          is_active?: boolean
           is_completed?: boolean
         }
         Update: {
@@ -70,7 +68,6 @@ export type Database = {
           created_by?: string
           draw_date?: string
           id?: string
-          is_active?: boolean
           is_completed?: boolean
         }
         Relationships: []
