@@ -20,7 +20,7 @@ export const AdminHeader = ({
   return (
     <div className="flex items-center justify-between mb-8">
       <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-      <div className="space-x-4">
+      <div className="flex items-center gap-3">
         <Button
           onClick={onToggleLock}
           disabled={isLoading || isPending}
@@ -28,19 +28,23 @@ export const AdminHeader = ({
             isLocked
               ? "bg-green-600 hover:bg-green-700"
               : "bg-red-600 hover:bg-red-700"
-          } text-white`}
+          } text-white h-10 px-4`}
         >
           {isLocked ? (
             <>
-              <Unlock className="mr-2" /> Unlock Entries
+              <Unlock className="mr-2 h-4 w-4" /> Unlock Entries
             </>
           ) : (
             <>
-              <Lock className="mr-2" /> Lock Entries
+              <Lock className="mr-2 h-4 w-4" /> Lock Entries
             </>
           )}
         </Button>
-        <Button variant="outline" onClick={onLogout}>
+        <Button 
+          variant="outline" 
+          onClick={onLogout}
+          className="h-10 px-4"
+        >
           Sign Out
         </Button>
       </div>
