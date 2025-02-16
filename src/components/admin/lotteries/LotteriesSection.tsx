@@ -1,10 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CreateLotteryDialog } from "./CreateLotteryDialog";
-import { Loader2, Trash2, Table } from "lucide-react";
+import { Loader2, Trash2, Table, Lock, Unlock } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 import { DataTable } from "../table/DataTable";
-import { Lock, Unlock } from "lucide-react";
 import { useToggleLottery } from "@/hooks/useToggleLottery";
 
 interface Lottery {
@@ -294,11 +294,20 @@ export function LotteriesSection() {
         {lotteries?.map((lottery) => (
           <AccordionItem key={lottery.id} value={lottery.id}>
             <div className="flex items-center justify-between">
-              <AccordionTrigger className="flex-1">
-                <div className="flex flex-col items-start">
-                  <p className="font-medium">
-                    Draw Date: {format(new Date(lottery.draw_date), "PPP")}
-                  </p>
+              <AccordionTrigger className="flex-1 py-4 px-2">
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">
+                      Draw Date: {format(new Date(lottery.draw_date), "PPP")}
+                    </p>
+                    <span className={`text-sm px-2 py-0.5 rounded-full ${
+                      lottery.lottery_status?.is_locked 
+                        ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-700"
+                    }`}>
+                      {lottery.lottery_status?.is_locked ? "Locked" : "Open"}
+                    </span>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Status: {lottery.is_completed ? "Completed" : "Upcoming"}
                   </p>
