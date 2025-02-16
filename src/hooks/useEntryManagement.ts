@@ -4,19 +4,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LotteryEntry } from "@/components/lottery/types";
+import { useActiveLottery } from "./useActiveLottery";
 
 export function useEntryManagement() {
   const [existingEntry, setExistingEntry] = useState<LotteryEntry | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: activeLottery } = useActiveLottery();
 
   const checkExistingEntry = async (email: string) => {
-    if (!email) return null;
+    if (!email || !activeLottery) return null;
     
     const { data, error } = await supabase
       .from("lottery_entries")
       .select("*")
-      .eq("entry_date", new Date().toISOString().split("T")[0])
+      .eq("lottery_id", activeLottery.id)
       .eq("email", email)
       .maybeSingle();
 
@@ -55,6 +57,10 @@ export function useEntryManagement() {
       email: string;
       num_tickets: number;
     }) => {
+      if (!activeLottery) {
+        throw new Error("No active lottery found");
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
 
@@ -108,6 +114,7 @@ export function useEntryManagement() {
             email: entry.email,
             num_tickets: entry.num_tickets,
             created_by: userId,
+            lottery_id: activeLottery.id,
           }]);
 
         if (error) throw error;
@@ -133,6 +140,12 @@ export function useEntryManagement() {
         toast({
           title: "Invalid Entry",
           description: "Number of tickets must be greater than 0 for new entries.",
+          variant: "destructive",
+        });
+      } else if (error.message === "No active lottery found") {
+        toast({
+          title: "No Active Lottery",
+          description: "There is currently no active lottery to enter.",
           variant: "destructive",
         });
       } else {

@@ -48,6 +48,33 @@ export type Database = {
         }
         Relationships: []
       }
+      lotteries: {
+        Row: {
+          created_at: string
+          created_by: string
+          draw_date: string
+          id: string
+          is_active: boolean
+          is_completed: boolean
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          draw_date: string
+          id?: string
+          is_active?: boolean
+          is_completed?: boolean
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          draw_date?: string
+          id?: string
+          is_active?: boolean
+          is_completed?: boolean
+        }
+        Relationships: []
+      }
       lottery_entries: {
         Row: {
           created_at: string
@@ -56,6 +83,7 @@ export type Database = {
           email: string
           entry_date: string
           id: string
+          lottery_id: string
           name: string
           num_tickets: number
         }
@@ -66,6 +94,7 @@ export type Database = {
           email: string
           entry_date?: string
           id?: string
+          lottery_id: string
           name: string
           num_tickets: number
         }
@@ -76,10 +105,19 @@ export type Database = {
           email?: string
           entry_date?: string
           id?: string
+          lottery_id?: string
           name?: string
           num_tickets?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lottery_entries_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lottery_status: {
         Row: {
@@ -88,6 +126,7 @@ export type Database = {
           id: string
           is_locked: boolean
           locked_at: string | null
+          lottery_id: string
         }
         Insert: {
           created_at?: string
@@ -95,6 +134,7 @@ export type Database = {
           id?: string
           is_locked?: boolean
           locked_at?: string | null
+          lottery_id: string
         }
         Update: {
           created_at?: string
@@ -102,8 +142,17 @@ export type Database = {
           id?: string
           is_locked?: boolean
           locked_at?: string | null
+          lottery_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lottery_status_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lottery_winners: {
         Row: {
@@ -111,6 +160,7 @@ export type Database = {
           draw_date: string
           entry_id: string
           id: string
+          lottery_id: string
           prize_id: string | null
         }
         Insert: {
@@ -118,6 +168,7 @@ export type Database = {
           draw_date?: string
           entry_id: string
           id?: string
+          lottery_id: string
           prize_id?: string | null
         }
         Update: {
@@ -125,6 +176,7 @@ export type Database = {
           draw_date?: string
           entry_id?: string
           id?: string
+          lottery_id?: string
           prize_id?: string | null
         }
         Relationships: [
@@ -133,6 +185,13 @@ export type Database = {
             columns: ["entry_id"]
             isOneToOne: false
             referencedRelation: "lottery_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lottery_winners_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
             referencedColumns: ["id"]
           },
           {
@@ -175,6 +234,7 @@ export type Database = {
           description: string | null
           draw_date: string
           id: string
+          lottery_id: string
           name: string
           quantity: number
           remaining_quantity: number
@@ -185,6 +245,7 @@ export type Database = {
           description?: string | null
           draw_date?: string
           id?: string
+          lottery_id: string
           name: string
           quantity: number
           remaining_quantity: number
@@ -195,11 +256,20 @@ export type Database = {
           description?: string | null
           draw_date?: string
           id?: string
+          lottery_id?: string
           name?: string
           quantity?: number
           remaining_quantity?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prizes_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -235,25 +305,55 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      get_lottery_stats: {
-        Args: {
-          target_date: string
-        }
+      get_active_lottery: {
+        Args: Record<PropertyKey, never>
         Returns: {
-          total_entries: number
-          total_tickets: number
-          total_prizes: number
-          remaining_prizes: number
+          id: string
+          draw_date: string
+          created_at: string
+          created_by: string
+          is_active: boolean
+          is_completed: boolean
         }[]
       }
+      get_lottery_stats:
+        | {
+            Args: {
+              target_date: string
+            }
+            Returns: {
+              total_entries: number
+              total_tickets: number
+              total_prizes: number
+              remaining_prizes: number
+            }[]
+          }
+        | {
+            Args: {
+              target_lottery_id: string
+            }
+            Returns: {
+              total_entries: number
+              total_tickets: number
+              total_prizes: number
+              remaining_prizes: number
+            }[]
+          }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_lottery_locked: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_lottery_locked:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: boolean
+          }
+        | {
+            Args: {
+              target_lottery_id: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       [_ in never]: never

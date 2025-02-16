@@ -2,11 +2,28 @@
 import { EntryForm } from "./lottery/EntryForm";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useEntryManagement } from "@/hooks/useEntryManagement";
-import { useLotteryStatus } from "@/hooks/useLotteryStatus";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LotteryEntryForm() {
   const isAuthenticated = useAuthStatus();
-  const lotteryStatus = useLotteryStatus();
+  const { data: activeLottery } = useActiveLottery();
+  
+  const { data: lotteryStatus } = useQuery({
+    queryKey: ["lottery-status", activeLottery?.id],
+    queryFn: async () => {
+      if (!activeLottery) return null;
+      
+      const { data, error } = await supabase
+        .rpc('is_lottery_locked', { target_lottery_id: activeLottery.id });
+
+      if (error) throw error;
+      return { is_locked: data };
+    },
+    enabled: !!activeLottery,
+  });
+
   const {
     existingEntry,
     handleEmailChange,
@@ -19,6 +36,16 @@ export function LotteryEntryForm() {
       <div className="text-center p-4 bg-yellow-50 rounded-lg">
         <p className="text-yellow-800">
           Please sign in to submit or view lottery entries.
+        </p>
+      </div>
+    );
+  }
+
+  if (!activeLottery) {
+    return (
+      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+        <p className="text-yellow-800">
+          There is currently no active lottery. Please check back later!
         </p>
       </div>
     );

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
@@ -7,6 +8,7 @@ import { LiveTicker } from "./LiveTicker";
 import { useState } from "react";
 import { LotteryStats } from "./lottery/LotteryStats";
 import { PrizePool } from "./lottery/PrizePool";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tables = Database['public']['Tables']
@@ -26,41 +28,53 @@ export const LiveDrawTab = () => {
   const { isAdmin } = useAuthStatus();
   const [lastWinner, setLastWinner] = useState<{ name: string; prizeName: string } | null>(null);
   
+  const { data: activeLottery } = useActiveLottery();
+  
   const { data: todayPrizes } = useQuery<Prize[]>({
-    queryKey: ["today-prizes"],
+    queryKey: ["today-prizes", activeLottery?.id],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      if (!activeLottery) return [];
+      
       const { data, error } = await supabase
         .from('prizes')
         .select('*')
-        .eq("draw_date", today)
+        .eq("lottery_id", activeLottery.id)
         .order("quantity", { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
+    enabled: !!activeLottery,
   });
 
   const { data: winners } = useQuery<(LotteryWinner & { entry: LotteryEntry; prize: Prize })[]>({
-    queryKey: ["today-winners"],
+    queryKey: ["today-winners", activeLottery?.id],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      if (!activeLottery) return [];
+      
       const { data, error } = await supabase
         .from('lottery_winners')
         .select('*, entry:lottery_entries(*), prize:prizes(*)')
-        .eq("draw_date", today);
+        .eq("lottery_id", activeLottery.id);
 
       if (error) throw error;
       return data || [];
     },
+    enabled: !!activeLottery,
   });
 
   const { data: lotteryStats } = useQuery<LotteryStats>({
-    queryKey: ["lottery-stats"],
+    queryKey: ["lottery-stats", activeLottery?.id],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      if (!activeLottery) return { 
+        total_entries: 0, 
+        total_tickets: 0, 
+        total_prizes: 0, 
+        remaining_prizes: 0 
+      };
+      
       const { data, error } = await supabase
-        .rpc('get_lottery_stats', { target_date: today });
+        .rpc('get_lottery_stats', { target_lottery_id: activeLottery.id });
 
       if (error) throw error;
       return (data && data[0]) || { 
@@ -70,16 +84,24 @@ export const LiveDrawTab = () => {
         remaining_prizes: 0 
       };
     },
+    enabled: !!activeLottery,
   });
 
   const handleDrawWinner = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    if (!activeLottery) {
+      toast({
+        title: "No active lottery",
+        description: "There is no active lottery to draw winners from.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Get all entries for today
+    // Get all entries for the active lottery
     const { data: entries, error: entriesError } = await supabase
         .from('lottery_entries')
         .select('*')
-        .eq("entry_date", today)
+        .eq("lottery_id", activeLottery.id)
         .eq("drawn", false);
 
     if (entriesError || !entries || entries.length === 0) {
@@ -91,11 +113,11 @@ export const LiveDrawTab = () => {
       return;
     }
 
-    // Get available prizes for today
+    // Get available prizes for the active lottery
     const { data: availablePrizes, error: prizesError } = await supabase
         .from('prizes')
         .select('*')
-        .eq("draw_date", today)
+        .eq("lottery_id", activeLottery.id)
         .gt("remaining_quantity", 0);
 
     if (prizesError || !availablePrizes || availablePrizes.length === 0) {
@@ -117,7 +139,7 @@ export const LiveDrawTab = () => {
       .insert({
         entry_id: randomEntry.id,
         prize_id: randomPrize.id,
-        draw_date: today
+        lottery_id: activeLottery.id
       });
 
     if (winnerError) {
@@ -166,6 +188,19 @@ export const LiveDrawTab = () => {
     if (!lotteryStats || lotteryStats.total_tickets === 0) return 0;
     return (numTickets / lotteryStats.total_tickets) * 100;
   };
+
+  if (!activeLottery) {
+    return (
+      <div className="text-center p-6 bg-yellow-50 rounded-lg">
+        <h3 className="text-xl font-semibold mb-2 text-yellow-800">
+          No Active Lottery
+        </h3>
+        <p className="text-yellow-700">
+          There is currently no active lottery. Please check back later!
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

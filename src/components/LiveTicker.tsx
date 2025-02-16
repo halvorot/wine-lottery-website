@@ -2,21 +2,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LotteryEntry } from "./lottery/types";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 export const LiveTicker = () => {
+  const { data: activeLottery } = useActiveLottery();
+  
   const { data: entries } = useQuery({
-    queryKey: ["recent-entries"],
+    queryKey: ["recent-entries", activeLottery?.id],
     queryFn: async () => {
+      if (!activeLottery) return [];
+      
       const { data, error } = await supabase
         .from("lottery_entries")
         .select("*")
-        .eq("entry_date", new Date().toISOString().split("T")[0])
+        .eq("lottery_id", activeLottery.id)
         .order("created_at", { ascending: false })
         .limit(10);
 
       if (error) throw error;
       return data as LotteryEntry[];
     },
+    enabled: !!activeLottery,
     refetchInterval: 5000, // Refetch every 5 seconds to keep the ticker up to date
   });
 
