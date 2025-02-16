@@ -20,7 +20,6 @@ type SortDirection = "asc" | "desc";
 export const AdminDashboard = () => {
   const { isAuthenticated, isAdmin } = useAuthStatus();
   const lotteryStatus = useLotteryStatus();
-  const { todayEntries: entries } = useLotteryEntries();
   const toggleLockMutation = useToggleLottery();
   const { toast } = useToast();
 
@@ -39,6 +38,18 @@ export const AdminDashboard = () => {
     entriesPerPage,
     selectedDate
   );
+
+  const { 
+    todayEntries: entries, 
+    totalCount: totalEntries,
+    sortColumn: entriesSortColumn,
+    sortDirection: entriesSortDirection,
+    page: entriesPage,
+    setPage: setEntriesPage,
+    handleSort: handleEntriesSort,
+    selectedDate: entriesSelectedDate,
+    setSelectedDate: setEntriesSelectedDate,
+  } = useLotteryEntries();
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -86,7 +97,7 @@ export const AdminDashboard = () => {
       />
 
       <AdminStats
-        entriesCount={entries?.length || 0}
+        entriesCount={totalEntries || 0}
         prizesCount={totalPrizes || 0}
       />
 
