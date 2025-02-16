@@ -13,13 +13,9 @@ export function useActiveLottery() {
         .eq('is_completed', false)
         .order('draw_date', { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // No active lottery found
-          return null;
-        }
         throw error;
       }
       

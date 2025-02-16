@@ -14,7 +14,7 @@ interface AdminContentProps {
 }
 
 export const AdminContent = ({ onLogout }: AdminContentProps) => {
-  const lotteryStatus = useLotteryStatus();
+  const { data: lotteryStatus } = useLotteryStatus();
   const toggleLockMutation = useToggleLottery();
   const entriesPerPage = 10;
 
@@ -51,8 +51,8 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg space-y-12">
       <AdminHeader
-        isLocked={lotteryStatus?.is_locked || false}
-        isLoading={!lotteryStatus}
+        isLocked={lotteryStatus?.data?.is_locked || false}
+        isLoading={!lotteryStatus?.data}
         isPending={toggleLockMutation.isPending}
         onToggleLock={() => toggleLockMutation.mutate()}
         onLogout={onLogout}
