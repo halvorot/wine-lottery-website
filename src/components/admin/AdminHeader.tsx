@@ -40,9 +40,6 @@ export const AdminHeader = ({
             </>
           )}
         </Button>
-        <Button className="bg-wine hover:bg-wine-light text-white">
-          Draw Winner
-        </Button>
         <Button variant="outline" onClick={onLogout}>
           Sign Out
         </Button>
