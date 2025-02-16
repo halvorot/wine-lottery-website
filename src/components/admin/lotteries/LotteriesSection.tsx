@@ -24,12 +24,17 @@ import {
 import { Table as UITable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { DataTable } from "../table/DataTable";
+import { Lock, Unlock } from "lucide-react";
+import { useToggleLottery } from "@/hooks/use-toggle-lottery";
 
 interface Lottery {
   id: string;
   draw_date: string;
   created_at: string;
   is_completed: boolean;
+  lottery_status: {
+    is_locked: boolean;
+  };
 }
 
 interface Prize {
@@ -53,17 +58,23 @@ export function LotteriesSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deletingLotteryId, setDeletingLotteryId] = useState<string | null>(null);
+  const toggleLockMutation = useToggleLottery();
 
   const { data: lotteries, isLoading } = useQuery({
     queryKey: ["lotteries"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lotteries")
-        .select("*")
+        .select(`
+          *,
+          lottery_status (
+            is_locked
+          )
+        `)
         .order("draw_date", { ascending: false });
 
       if (error) throw error;
-      return data as Lottery[];
+      return data;
     },
   });
 
@@ -124,7 +135,7 @@ export function LotteriesSection() {
     },
   });
 
-  const LotteryDetails = ({ lottery }: { lottery: Lottery }) => {
+  const LotteryDetails = ({ lottery }: { lottery: any }) => {
     const [prizesPage, setPrizesPage] = useState(1);
     const [entriesPage, setEntriesPage] = useState(1);
     const [prizeSort, setPrizeSort] = useState<{ column: string; direction: "asc" | "desc" }>({
@@ -202,6 +213,30 @@ export function LotteriesSection() {
 
     return (
       <div className="space-y-6 py-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => toggleLockMutation.mutate(lottery.id)}
+              disabled={toggleLockMutation.isPending}
+              variant="outline"
+              className={lottery.lottery_status?.is_locked ? "text-green-600" : "text-red-600"}
+            >
+              {lottery.lottery_status?.is_locked ? (
+                <>
+                  <Unlock className="mr-2 h-4 w-4" /> Unlock Lottery
+                </>
+              ) : (
+                <>
+                  <Lock className="mr-2 h-4 w-4" /> Lock Lottery
+                </>
+              )}
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Status: {lottery.lottery_status?.is_locked ? "Locked" : "Open"}
+            </span>
+          </div>
+        </div>
+
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Table className="h-4 w-4" />

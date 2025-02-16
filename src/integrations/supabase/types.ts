@@ -119,24 +119,18 @@ export type Database = {
       lottery_status: {
         Row: {
           created_at: string
-          date: string
-          id: string
           is_locked: boolean
           locked_at: string | null
           lottery_id: string
         }
         Insert: {
           created_at?: string
-          date?: string
-          id?: string
           is_locked?: boolean
           locked_at?: string | null
           lottery_id: string
         }
         Update: {
           created_at?: string
-          date?: string
-          id?: string
           is_locked?: boolean
           locked_at?: string | null
           lottery_id?: string
@@ -145,7 +139,7 @@ export type Database = {
           {
             foreignKeyName: "lottery_status_lottery_id_fkey"
             columns: ["lottery_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "lotteries"
             referencedColumns: ["id"]
           },

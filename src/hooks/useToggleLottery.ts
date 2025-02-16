@@ -8,12 +8,11 @@ export function useToggleLottery() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+    mutationFn: async (lotteryId: string) => {
       const { data: currentStatus } = await supabase
         .from("lottery_status")
         .select("is_locked")
-        .eq("date", today)
+        .eq("lottery_id", lotteryId)
         .single();
       
       const newLockedStatus = !currentStatus?.is_locked;
@@ -24,7 +23,7 @@ export function useToggleLottery() {
           is_locked: newLockedStatus,
           locked_at: newLockedStatus ? new Date().toISOString() : null
         })
-        .eq("date", today)
+        .eq("lottery_id", lotteryId)
         .select()
         .single();
 

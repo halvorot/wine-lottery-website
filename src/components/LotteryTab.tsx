@@ -1,44 +1,24 @@
-
 import { Button } from "@/components/ui/button";
 import { Wine } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { LotteryEntryForm } from "./LotteryEntryForm";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 export const LotteryTab = () => {
-  const queryClient = useQueryClient();
   const { data: activeLottery } = useActiveLottery();
 
   const { data: lotteryStatus } = useQuery({
     queryKey: ["lottery-status", activeLottery?.id],
     queryFn: async () => {
       if (!activeLottery) return null;
-      
-      // First try to get lottery status
+
       const { data, error } = await supabase
         .from("lottery_status")
         .select("*")
         .eq("lottery_id", activeLottery.id)
         .maybeSingle();
-
-      // If no status exists, create one
-      if (!data && !error) {
-        const { data: newStatus, error: createError } = await supabase
-          .from("lottery_status")
-          .insert([
-            {
-              lottery_id: activeLottery.id,
-              is_locked: false,
-            },
-          ])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        return newStatus;
-      }
 
       if (error) throw error;
       return data;
