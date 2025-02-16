@@ -60,57 +60,61 @@ export const PrizesSection = ({
         <AddPrizeForm />
       </div>
 
-      <div className="flex items-center gap-4 mb-4">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "justify-start text-left font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => {
-                setDate(newDate);
-                if (newDate) {
-                  onDateChange(format(newDate, "yyyy-MM-dd"));
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            setDate(undefined);
-            onDateChange("all");
-          }}
-        >
-          Show All Dates
-        </Button>
-      </div>
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold">Prize List</h3>
+        <div className="flex items-center gap-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? format(date, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(newDate) => {
+                  setDate(newDate);
+                  if (newDate) {
+                    onDateChange(format(newDate, "yyyy-MM-dd"));
+                  }
+                }}
+                initialFocus
+                className="bg-white"
+              />
+            </PopoverContent>
+          </Popover>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setDate(undefined);
+              onDateChange("all");
+            }}
+          >
+            Show All Dates
+          </Button>
+        </div>
 
-      {!isLoading && (
-        <PrizesTable
-          prizes={prizes}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          onSort={onSort}
-          page={page}
-          totalCount={totalCount}
-          entriesPerPage={entriesPerPage}
-          onPageChange={onPageChange}
-        />
-      )}
+        {!isLoading && (
+          <PrizesTable
+            prizes={prizes}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSort={onSort}
+            page={page}
+            totalCount={totalCount}
+            entriesPerPage={entriesPerPage}
+            onPageChange={onPageChange}
+          />
+        )}
+      </div>
     </div>
   );
 };
