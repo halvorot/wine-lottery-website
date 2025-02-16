@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,7 +72,7 @@ export function LotteriesSection() {
         .order("draw_date", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Lottery[];
     },
   });
 
