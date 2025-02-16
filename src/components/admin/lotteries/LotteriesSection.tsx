@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CreateLotteryDialog } from "./CreateLotteryDialog";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, ChevronDown, Table } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Table as UITable, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 
 interface Lottery {
@@ -23,6 +30,23 @@ interface Lottery {
   draw_date: string;
   created_at: string;
   is_completed: boolean;
+}
+
+interface Prize {
+  id: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  remaining_quantity: number;
+  created_at: string;
+}
+
+interface Entry {
+  id: string;
+  name: string;
+  email: string;
+  num_tickets: number;
+  created_at: string;
 }
 
 export function LotteriesSection() {
@@ -42,6 +66,36 @@ export function LotteriesSection() {
       return data as Lottery[];
     },
   });
+
+  const useLotteryDetails = (lotteryId: string) => {
+    const { data: prizes } = useQuery({
+      queryKey: ["prizes", lotteryId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("prizes")
+          .select("*")
+          .eq("lottery_id", lotteryId);
+
+        if (error) throw error;
+        return data as Prize[];
+      },
+    });
+
+    const { data: entries } = useQuery({
+      queryKey: ["entries", lotteryId],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("lottery_entries")
+          .select("*")
+          .eq("lottery_id", lotteryId);
+
+        if (error) throw error;
+        return data as Entry[];
+      },
+    });
+
+    return { prizes, entries };
+  };
 
   const deleteLotteryMutation = useMutation({
     mutationFn: async (lotteryId: string) => {
@@ -70,6 +124,82 @@ export function LotteriesSection() {
     },
   });
 
+  const LotteryDetails = ({ lottery }: { lottery: Lottery }) => {
+    const { prizes, entries } = useLotteryDetails(lottery.id);
+
+    return (
+      <div className="space-y-6 py-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Table className="h-4 w-4" />
+            <h4 className="font-semibold">Prizes</h4>
+          </div>
+          <UITable>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Remaining</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {prizes?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No prizes found
+                  </TableCell>
+                </TableRow>
+              )}
+              {prizes?.map((prize) => (
+                <TableRow key={prize.id}>
+                  <TableCell>{prize.name}</TableCell>
+                  <TableCell>{prize.description || "-"}</TableCell>
+                  <TableCell>{prize.quantity}</TableCell>
+                  <TableCell>{prize.remaining_quantity}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </UITable>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Table className="h-4 w-4" />
+            <h4 className="font-semibold">Entries</h4>
+          </div>
+          <UITable>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Tickets</TableHead>
+                <TableHead>Entry Time</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {entries?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No entries found
+                  </TableCell>
+                </TableRow>
+              )}
+              {entries?.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>{entry.name}</TableCell>
+                  <TableCell>{entry.email}</TableCell>
+                  <TableCell>{entry.num_tickets}</TableCell>
+                  <TableCell>{format(new Date(entry.created_at), "PPP p")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </UITable>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -85,41 +215,41 @@ export function LotteriesSection() {
         <CreateLotteryDialog />
       </div>
 
-      <div className="grid gap-4">
+      <Accordion type="single" collapsible className="w-full">
         {lotteries?.map((lottery) => (
-          <div
-            key={lottery.id}
-            className="flex items-center justify-between p-4 border rounded-lg bg-white"
-          >
-            <div className="space-y-1">
-              <p className="font-medium">
-                Draw Date: {format(new Date(lottery.draw_date), "PPP")}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Created: {format(new Date(lottery.created_at), "PPP p")}
-              </p>
-              <p className="text-sm">
-                Status: {lottery.is_completed ? "Completed" : "Upcoming"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
+          <AccordionItem key={lottery.id} value={lottery.id}>
+            <div className="flex items-center justify-between">
+              <AccordionTrigger className="flex-1">
+                <div className="flex flex-col items-start">
+                  <p className="font-medium">
+                    Draw Date: {format(new Date(lottery.draw_date), "PPP")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Status: {lottery.is_completed ? "Completed" : "Upcoming"}
+                  </p>
+                </div>
+              </AccordionTrigger>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-destructive hover:text-destructive/90"
+                className="text-destructive hover:text-destructive/90 mr-4"
                 onClick={() => setDeletingLotteryId(lottery.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-          </div>
+            <AccordionContent>
+              <LotteryDetails lottery={lottery} />
+            </AccordionContent>
+          </AccordionItem>
         ))}
-        {(!lotteries || lotteries.length === 0) && (
-          <p className="text-center text-muted-foreground py-8">
-            No lotteries found. Create one to get started.
-          </p>
-        )}
-      </div>
+      </Accordion>
+
+      {(!lotteries || lotteries.length === 0) && (
+        <p className="text-center text-muted-foreground py-8">
+          No lotteries found. Create one to get started.
+        </p>
+      )}
 
       <AlertDialog
         open={!!deletingLotteryId}
