@@ -9,8 +9,8 @@ export function useActiveLottery() {
       const { data, error } = await supabase
         .from('lotteries')
         .select('*')
-        .eq('is_active', true)
         .eq('is_completed', false)
+        .gte('draw_date', new Date().toISOString().split('T')[0])
         .order('draw_date', { ascending: true })
         .limit(1)
         .maybeSingle();
