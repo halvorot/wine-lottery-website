@@ -34,12 +34,25 @@ export function CreateLotteryDialog() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
+      // First check if there are any active lotteries
+      const { data: existingLotteries } = await supabase
+        .from("lotteries")
+        .select("id")
+        .eq("is_active", true)
+        .limit(1);
+
+      // If there are active lotteries, throw an error
+      if (existingLotteries && existingLotteries.length > 0) {
+        throw new Error("There is already an active lottery");
+      }
+
       const { data, error } = await supabase
         .from("lotteries")
         .insert({
           draw_date: drawDate.toISOString().split('T')[0],
           is_active: true,
           created_by: userData.user.id,
+          is_completed: false, // explicitly set is_completed
         })
         .select()
         .single();
@@ -49,6 +62,7 @@ export function CreateLotteryDialog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-lottery"] });
+      queryClient.invalidateQueries({ queryKey: ["lotteries"] }); // Also invalidate the lotteries list
       setOpen(false);
       toast({
         title: "Success",
@@ -59,7 +73,7 @@ export function CreateLotteryDialog() {
       console.error("Error creating lottery:", error);
       toast({
         title: "Error",
-        description: "Failed to create lottery. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create lottery. Please try again.",
         variant: "destructive",
       });
     },
