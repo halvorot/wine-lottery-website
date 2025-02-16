@@ -45,11 +45,17 @@ export const EntriesSection = ({
 
   const handleDateSelect = (newDate: Date | undefined) => {
     if (!newDate) return;
-    onDateChange(newDate.toISOString().split("T")[0]);
+    // Add the timezone offset to ensure we get the correct date
+    const offset = newDate.getTimezoneOffset();
+    const adjustedDate = new Date(newDate.getTime() + (offset * 60 * 1000));
+    onDateChange(adjustedDate.toISOString().split("T")[0]);
   };
 
   const handleTodayClick = () => {
-    onDateChange(new Date().toISOString().split("T")[0]);
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const adjustedDate = new Date(today.getTime() + (offset * 60 * 1000));
+    onDateChange(adjustedDate.toISOString().split("T")[0]);
   };
 
   const handleShowAllDates = () => {
