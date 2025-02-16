@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 export function CreateLotteryDialog() {
   const [open, setOpen] = useState(false);
   const [drawDate, setDrawDate] = useState<Date>();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -86,6 +87,7 @@ export function CreateLotteryDialog() {
   const handleDateSelect = (date: Date | undefined) => {
     console.log("Date selected:", date);
     setDrawDate(date);
+    setCalendarOpen(false);
   };
 
   return (
@@ -103,7 +105,7 @@ export function CreateLotteryDialog() {
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="drawDate">Draw Date</Label>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   id="drawDate"
@@ -131,7 +133,7 @@ export function CreateLotteryDialog() {
                     return isBefore(date, today);
                   }}
                   initialFocus
-                  className="rounded-md border"
+                  className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100"
                 />
               </PopoverContent>
             </Popover>
