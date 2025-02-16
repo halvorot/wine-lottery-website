@@ -17,10 +17,10 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
     queryFn: async () => {
       let query = supabase
         .from("lottery_entries")
-        .select("*", { count: "exact" });
+        .select("*, lotteries!inner(draw_date)");
 
       if (selectedDate !== "all") {
-        query = query.eq("entry_date", selectedDate);
+        query = query.eq("lotteries.draw_date", selectedDate);
       }
 
       const { data, error } = await query
@@ -28,7 +28,16 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
         .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
 
       if (error) throw error;
-      return data as LotteryEntry[];
+      
+      // Transform the data to match the LotteryEntry type
+      return data.map((entry: any) => ({
+        id: entry.id,
+        name: entry.name,
+        email: entry.email,
+        num_tickets: entry.num_tickets,
+        created_at: entry.created_at,
+        entry_date: entry.lotteries.draw_date
+      })) as LotteryEntry[];
     },
   });
 
@@ -37,10 +46,10 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
     queryFn: async () => {
       let query = supabase
         .from("lottery_entries")
-        .select("*", { count: "exact", head: true });
+        .select("*, lotteries!inner(draw_date)", { count: "exact", head: true });
 
       if (selectedDate !== "all") {
-        query = query.eq("entry_date", selectedDate);
+        query = query.eq("lotteries.draw_date", selectedDate);
       }
 
       const { count, error } = await query;

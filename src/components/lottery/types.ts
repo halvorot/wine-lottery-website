@@ -5,6 +5,7 @@ export interface LotteryEntry {
   email: string;
   num_tickets: number;
   created_at: string;
+  entry_date: string;
 }
 
 export type SortColumn = "name" | "email" | "num_tickets" | "created_at";

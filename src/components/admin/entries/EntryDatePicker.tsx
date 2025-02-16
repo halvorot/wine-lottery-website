@@ -45,7 +45,7 @@ export const EntryDatePicker = ({
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {selectedDate === "all" ? "All Dates" : format(new Date(selectedDate), "PPP")}
+            {selectedDate === "all" ? "All Draw Dates" : format(new Date(selectedDate), "PPP")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-white">
@@ -63,14 +63,14 @@ export const EntryDatePicker = ({
         onClick={handleTodayClick}
         className="flex-1 sm:flex-none"
       >
-        Today
+        Today's Draw
       </Button>
       <Button 
         variant="outline"
         onClick={handleShowAllDates}
         className="flex-1 sm:flex-none"
       >
-        All Dates
+        All Draw Dates
       </Button>
     </div>
   );
