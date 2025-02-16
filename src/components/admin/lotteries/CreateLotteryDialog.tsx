@@ -88,7 +88,6 @@ export function CreateLotteryDialog() {
     console.log("Date selected:", date);
     if (date) {
       setDrawDate(date);
-      // Delay closing the calendar slightly to ensure the date is set
       setTimeout(() => setCalendarOpen(false), 100);
     }
   };
@@ -130,21 +129,24 @@ export function CreateLotteryDialog() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-auto p-0 bg-white z-[100] shadow-lg border rounded-md" 
+                className="w-auto p-0 bg-white z-[100] shadow-lg border rounded-md pointer-events-auto select-none" 
                 align="start"
                 side="bottom"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Calendar
-                  mode="single"
-                  selected={drawDate}
-                  onSelect={handleDateSelect}
-                  disabled={(date) => {
-                    const today = startOfDay(new Date());
-                    return isBefore(date, today);
-                  }}
-                  initialFocus
-                  className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100"
-                />
+                <div className="p-0" onClick={(e) => e.stopPropagation()}>
+                  <Calendar
+                    mode="single"
+                    selected={drawDate}
+                    onSelect={handleDateSelect}
+                    disabled={(date) => {
+                      const today = startOfDay(new Date());
+                      return isBefore(date, today);
+                    }}
+                    initialFocus
+                    className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
+                  />
+                </div>
               </PopoverContent>
             </Popover>
           </div>
