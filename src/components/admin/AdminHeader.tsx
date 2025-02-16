@@ -18,9 +18,9 @@ export const AdminHeader = ({
   onLogout,
 }: AdminHeaderProps) => {
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-8">
       <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 w-full sm:w-auto">
         <Button
           onClick={onToggleLock}
           disabled={isLoading || isPending}
@@ -28,7 +28,7 @@ export const AdminHeader = ({
             isLocked
               ? "bg-green-600 hover:bg-green-700"
               : "bg-red-600 hover:bg-red-700"
-          } text-white h-10 px-4`}
+          } text-white h-10 px-4 flex-1 sm:flex-none`}
         >
           {isLocked ? (
             <>
@@ -43,7 +43,7 @@ export const AdminHeader = ({
         <Button 
           variant="outline" 
           onClick={onLogout}
-          className="h-10 px-4"
+          className="h-10 px-4 flex-1 sm:flex-none"
         >
           Sign Out
         </Button>
