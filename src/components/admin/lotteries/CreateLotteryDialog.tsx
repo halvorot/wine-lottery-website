@@ -31,14 +31,16 @@ export function CreateLotteryDialog() {
     mutationFn: async () => {
       if (!drawDate) throw new Error("Draw date is required");
 
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("User not authenticated");
+
       const { data, error } = await supabase
         .from("lotteries")
-        .insert([
-          {
-            draw_date: drawDate.toISOString().split('T')[0],
-            is_active: true,
-          },
-        ])
+        .insert({
+          draw_date: drawDate.toISOString().split('T')[0],
+          is_active: true,
+          created_by: userData.user.id,
+        })
         .select()
         .single();
 
@@ -95,7 +97,7 @@ export function CreateLotteryDialog() {
                   {drawDate ? format(drawDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" align="start">
                 <Calendar
                   mode="single"
                   selected={drawDate}
