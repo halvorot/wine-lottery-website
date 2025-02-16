@@ -53,6 +53,7 @@ export type Database = {
           created_at: string
           created_by: string
           draw_date: string
+          draw_time: string
           id: string
           is_completed: boolean
         }
@@ -60,6 +61,7 @@ export type Database = {
           created_at?: string
           created_by: string
           draw_date: string
+          draw_time?: string
           id?: string
           is_completed?: boolean
         }
@@ -67,6 +69,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           draw_date?: string
+          draw_time?: string
           id?: string
           is_completed?: boolean
         }

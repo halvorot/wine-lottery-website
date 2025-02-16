@@ -17,12 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, isBefore, startOfDay } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export function CreateLotteryDialog() {
   const [open, setOpen] = useState(false);
   const [drawDate, setDrawDate] = useState<Date>();
+  const [drawTime, setDrawTime] = useState("12:00");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -41,6 +43,7 @@ export function CreateLotteryDialog() {
         .from("lotteries")
         .insert({
           draw_date: formattedDate,
+          draw_time: drawTime,
           created_by: userData.user.id,
           is_completed: false,
         })
@@ -94,7 +97,7 @@ export function CreateLotteryDialog() {
         <DialogHeader>
           <DialogTitle>Create New Lottery</DialogTitle>
           <DialogDescription>
-            Set up a new lottery event. Choose the draw date carefully.
+            Set up a new lottery event. Choose the draw date and time carefully.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -124,27 +127,38 @@ export function CreateLotteryDialog() {
                 side="bottom"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-0" onClick={(e) => e.stopPropagation()}>
-                  <Calendar
-                    mode="single"
-                    selected={drawDate}
-                    onSelect={handleDateSelect}
-                    disabled={(date) => {
-                      const today = startOfDay(new Date());
-                      return isBefore(date, today);
-                    }}
-                    initialFocus
-                    className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
-                  />
-                </div>
+                <Calendar
+                  mode="single"
+                  selected={drawDate}
+                  onSelect={handleDateSelect}
+                  disabled={(date) => {
+                    const today = startOfDay(new Date());
+                    return isBefore(date, today);
+                  }}
+                  initialFocus
+                  className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
+                />
               </PopoverContent>
             </Popover>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="drawTime">Draw Time</Label>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <Input
+                id="drawTime"
+                type="time"
+                value={drawTime}
+                onChange={(e) => setDrawTime(e.target.value)}
+                className="flex-1"
+              />
+            </div>
           </div>
         </div>
         <DialogFooter>
           <Button
             onClick={handleCreate}
-            disabled={!drawDate || createLotteryMutation.isPending}
+            disabled={!drawDate || !drawTime || createLotteryMutation.isPending}
           >
             {createLotteryMutation.isPending ? "Creating..." : "Create Lottery"}
           </Button>

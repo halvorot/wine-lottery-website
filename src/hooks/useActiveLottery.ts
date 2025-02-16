@@ -8,7 +8,12 @@ export function useActiveLottery() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('lotteries')
-        .select('*')
+        .select(`
+          *,
+          lottery_status (
+            is_locked
+          )
+        `)
         .eq('is_completed', false)
         .gte('draw_date', new Date().toISOString().split('T')[0])
         .order('draw_date', { ascending: true })
