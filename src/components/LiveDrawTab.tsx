@@ -1,15 +1,12 @@
-
-import { Trophy } from "lucide-react";
-import { LiveTicker } from "./LiveTicker";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { WinnerAnnouncement } from "./WinnerAnnouncement";
+import { LiveTicker } from "./LiveTicker";
 import { useState } from "react";
-import { Badge } from "./ui/badge";
-import { cn } from "@/lib/utils";
+import { LotteryStats } from "./lottery/LotteryStats";
+import { PrizePool } from "./lottery/PrizePool";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tables = Database['public']['Tables']
@@ -66,7 +63,6 @@ export const LiveDrawTab = () => {
         .rpc('get_lottery_stats', { target_date: today });
 
       if (error) throw error;
-      // Since the RPC returns an array with a single row, we take the first item
       return (data && data[0]) || { 
         total_entries: 0, 
         total_tickets: 0, 
@@ -175,94 +171,14 @@ export const LiveDrawTab = () => {
     <div className="space-y-8">
       <WinnerAnnouncement winner={lastWinner} />
       <LiveTicker />
-
-      {/* Lottery Statistics */}
-      <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Entries</h3>
-          <p className="text-2xl font-bold">{lotteryStats?.total_entries || 0}</p>
-        </div>
-        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Tickets</h3>
-          <p className="text-2xl font-bold">{lotteryStats?.total_tickets || 0}</p>
-        </div>
-        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Prizes</h3>
-          <p className="text-2xl font-bold">{lotteryStats?.total_prizes || 0}</p>
-        </div>
-        <div className="bg-white rounded-lg p-4 text-center shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground mb-1">Remaining Prizes</h3>
-          <p className="text-2xl font-bold">{lotteryStats?.remaining_prizes || 0}</p>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg text-center space-y-8">
-        <Trophy size={48} className="text-gold mx-auto" strokeWidth={1.5} />
-        <h2 className="text-3xl font-bold">Today's Prize Pool</h2>
-        {isAdmin && (
-          <div className="flex justify-center">
-            <Button onClick={handleDrawWinner} className="bg-gold hover:bg-gold/90 text-white">
-              Draw Winner
-            </Button>
-          </div>
-        )}
-        <div className="grid md:grid-cols-3 gap-6">
-          {todayPrizes && todayPrizes.length > 0 ? (
-            todayPrizes.map((prize, index) => {
-              const prizeWinners = winners?.filter(w => w.prize_id === prize.id) || [];
-              const isDrawn = prizeWinners.length > 0;
-              const baseChance = calculateWinningChance(1);
-              
-              return (
-                <div 
-                  key={prize.id} 
-                  className={cn(
-                    "bg-cream rounded-lg p-6 relative transition-colors",
-                    isDrawn && "bg-cream/50"
-                  )}
-                >
-                  <Badge 
-                    variant={prize.remaining_quantity > 0 ? "secondary" : "destructive"}
-                    className="absolute -top-2 -right-2"
-                  >
-                    {prize.remaining_quantity} left
-                  </Badge>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {index === 0
-                      ? "Grand Prize"
-                      : index === 1
-                      ? "Second Prize"
-                      : "Third Prize"}
-                  </h3>
-                  <p>{prize.name}</p>
-                  {prize.description && (
-                    <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
-                  )}
-                  {!isDrawn && baseChance > 0 && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Chance per ticket: {baseChance.toFixed(2)}%
-                    </p>
-                  )}
-                  {prizeWinners.length > 0 && (
-                    <div className="mt-4 text-sm border-t border-gray-200 pt-2">
-                      <p className="font-semibold">Winners:</p>
-                      {prizeWinners.map(winner => (
-                        <p key={winner.id} className="text-primary">
-                          {winner.entry.name}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            <div className="col-span-3 text-center text-muted-foreground">
-              No prizes available for today's draw yet.
-            </div>
-          )}
-        </div>
-      </div>
+      <LotteryStats stats={lotteryStats} />
+      <PrizePool
+        prizes={todayPrizes}
+        winners={winners}
+        isAdmin={isAdmin}
+        onDrawWinner={handleDrawWinner}
+        calculateWinningChance={calculateWinningChance}
+      />
     </div>
   );
 };
