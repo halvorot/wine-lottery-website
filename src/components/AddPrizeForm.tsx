@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 type PrizeFormData = {
   name: string;
@@ -26,6 +27,8 @@ type PrizeFormData = {
 export function AddPrizeForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { data: activeLottery } = useActiveLottery();
+  
   const form = useForm<PrizeFormData>({
     defaultValues: {
       name: "",
@@ -38,6 +41,15 @@ export function AddPrizeForm() {
   const onSubmit = async (data: PrizeFormData) => {
     try {
       setIsLoading(true);
+      
+      if (!activeLottery) {
+        toast({
+          title: "Error",
+          description: "No active lottery found. Please create a lottery first.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
@@ -57,6 +69,7 @@ export function AddPrizeForm() {
         remaining_quantity: data.quantity,
         draw_date: data.drawDate,
         created_by: session.user.id,
+        lottery_id: activeLottery.id
       });
 
       if (error) throw error;
@@ -78,6 +91,16 @@ export function AddPrizeForm() {
       setIsLoading(false);
     }
   };
+
+  if (!activeLottery) {
+    return (
+      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+        <p className="text-yellow-800">
+          No active lottery found. Please create a lottery first.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

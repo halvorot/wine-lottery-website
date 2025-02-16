@@ -1,17 +1,20 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useActiveLottery } from "./useActiveLottery";
 
 export function useLotteryStatus() {
-  const { data: lotteryStatus } = useQuery({
-    queryKey: ["lottery-status"],
+  const { data: activeLottery } = useActiveLottery();
+
+  return useQuery({
+    queryKey: ["lottery-status", activeLottery?.id],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      
+      if (!activeLottery) return null;
+
       const { data: existingStatus, error: fetchError } = await supabase
         .from("lottery_status")
         .select("*")
-        .eq("date", today)
+        .eq("lottery_id", activeLottery.id)
         .maybeSingle();
       
       if (fetchError) throw fetchError;
@@ -19,7 +22,10 @@ export function useLotteryStatus() {
       if (!existingStatus) {
         const { data: newStatus, error: createError } = await supabase
           .from("lottery_status")
-          .insert([{ date: today, is_locked: false }])
+          .insert([{ 
+            lottery_id: activeLottery.id,
+            is_locked: false 
+          }])
           .select()
           .single();
           
@@ -29,7 +35,6 @@ export function useLotteryStatus() {
       
       return existingStatus;
     },
+    enabled: !!activeLottery,
   });
-
-  return lotteryStatus;
 }

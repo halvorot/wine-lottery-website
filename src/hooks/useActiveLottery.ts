@@ -7,10 +7,23 @@ export function useActiveLottery() {
     queryKey: ["active-lottery"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_active_lottery');
+        .from('lotteries')
+        .select('*')
+        .eq('is_active', true)
+        .eq('is_completed', false)
+        .order('draw_date', { ascending: true })
+        .limit(1)
+        .single();
 
-      if (error) throw error;
-      return data?.[0] || null;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No active lottery found
+          return null;
+        }
+        throw error;
+      }
+      
+      return data;
     },
   });
 }
