@@ -34,10 +34,13 @@ export function CreateLotteryDialog() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
+      // Format the date in YYYY-MM-DD format using the local timezone
+      const formattedDate = format(drawDate, 'yyyy-MM-dd');
+
       const { data, error } = await supabase
         .from("lotteries")
         .insert({
-          draw_date: drawDate.toISOString().split('T')[0],
+          draw_date: formattedDate,
           created_by: userData.user.id,
           is_completed: false,
         })
