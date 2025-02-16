@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Prize {
@@ -68,6 +68,35 @@ export function PrizesTable({
   const handleConfirmDelete = async () => {
     if (!selectedPrize) return;
 
+    // First check if the prize has been awarded to any winners
+    const { data: winnerPrize, error: winnerCheckError } = await supabase
+      .from('lottery_winners')
+      .select('*')
+      .eq('prize_id', selectedPrize.id)
+      .maybeSingle();
+
+    if (winnerCheckError) {
+      toast({
+        title: "Error",
+        description: "Failed to check prize status. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Winner check error:", winnerCheckError);
+      return;
+    }
+
+    if (winnerPrize) {
+      toast({
+        title: "Cannot Delete Prize",
+        description: "This prize cannot be deleted because it has been awarded to a winner.",
+        variant: "destructive",
+      });
+      setDeleteDialogOpen(false);
+      setSelectedPrize(null);
+      return;
+    }
+
+    // If not awarded, proceed with deletion
     const { error } = await supabase
       .from("prizes")
       .delete()
