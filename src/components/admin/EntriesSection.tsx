@@ -86,6 +86,35 @@ export const EntriesSection = ({
   const handleConfirmDelete = async () => {
     if (!selectedEntry) return;
 
+    // First check if the entry is a winner
+    const { data: winnerEntry, error: winnerCheckError } = await supabase
+      .from('lottery_winners')
+      .select('*')
+      .eq('entry_id', selectedEntry.id)
+      .maybeSingle();
+
+    if (winnerCheckError) {
+      toast({
+        title: "Error",
+        description: "Failed to check entry status. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Winner check error:", winnerCheckError);
+      return;
+    }
+
+    if (winnerEntry) {
+      toast({
+        title: "Cannot Delete Entry",
+        description: "This entry cannot be deleted because it has won a prize.",
+        variant: "destructive",
+      });
+      setDeleteDialogOpen(false);
+      setSelectedEntry(null);
+      return;
+    }
+
+    // If not a winner, proceed with deletion
     const { error } = await supabase
       .from("lottery_entries")
       .delete()
