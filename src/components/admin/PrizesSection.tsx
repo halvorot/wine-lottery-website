@@ -75,15 +75,15 @@ export const PrizesSection = ({
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
           <h3 className="text-xl font-semibold">Prize List</h3>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal",
+                    "justify-start text-left font-normal flex-1 sm:flex-none",
                     !date && "text-muted-foreground"
                   )}
                 >
@@ -104,6 +104,7 @@ export const PrizesSection = ({
             <Button 
               variant="outline"
               onClick={handleTodayClick}
+              className="flex-1 sm:flex-none"
             >
               Today
             </Button>
@@ -113,6 +114,7 @@ export const PrizesSection = ({
                 setDate(undefined);
                 onDateChange("all");
               }}
+              className="flex-1 sm:flex-none"
             >
               Show All Dates
             </Button>
