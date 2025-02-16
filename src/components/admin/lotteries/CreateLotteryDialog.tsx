@@ -86,8 +86,11 @@ export function CreateLotteryDialog() {
 
   const handleDateSelect = (date: Date | undefined) => {
     console.log("Date selected:", date);
-    setDrawDate(date);
-    setCalendarOpen(false);
+    if (date) {
+      setDrawDate(date);
+      // Delay closing the calendar slightly to ensure the date is set
+      setTimeout(() => setCalendarOpen(false), 100);
+    }
   };
 
   return (
@@ -105,7 +108,13 @@ export function CreateLotteryDialog() {
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="drawDate">Draw Date</Label>
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <Popover 
+              open={calendarOpen} 
+              onOpenChange={(open) => {
+                console.log("Calendar open state changing to:", open);
+                setCalendarOpen(open);
+              }}
+            >
               <PopoverTrigger asChild>
                 <Button
                   id="drawDate"
@@ -114,6 +123,7 @@ export function CreateLotteryDialog() {
                     "justify-start text-left font-normal",
                     !drawDate && "text-muted-foreground"
                   )}
+                  onClick={() => setCalendarOpen(true)}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {drawDate ? format(drawDate, "PPP") : "Pick a date"}
