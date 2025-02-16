@@ -8,17 +8,22 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<string>(
+  const [selectedDate, setSelectedDate] = useState<string | "all">(
     new Date().toISOString().split("T")[0]
   );
 
   const { data: todayEntries } = useQuery({
-    queryKey: ["today-entries", sortColumn, sortDirection, page, selectedDate],
+    queryKey: ["entries", sortColumn, sortDirection, page, selectedDate],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("lottery_entries")
-        .select("*", { count: "exact" })
-        .eq("entry_date", selectedDate)
+        .select("*", { count: "exact" });
+
+      if (selectedDate !== "all") {
+        query = query.eq("entry_date", selectedDate);
+      }
+
+      const { data, error } = await query
         .order(sortColumn, { ascending: sortDirection === "asc" })
         .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
 
@@ -30,10 +35,15 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
   const { data: totalCount } = useQuery({
     queryKey: ["entries-count", selectedDate],
     queryFn: async () => {
-      const { count, error } = await supabase
+      let query = supabase
         .from("lottery_entries")
-        .select("*", { count: "exact", head: true })
-        .eq("entry_date", selectedDate);
+        .select("*", { count: "exact", head: true });
+
+      if (selectedDate !== "all") {
+        query = query.eq("entry_date", selectedDate);
+      }
+
+      const { count, error } = await query;
 
       if (error) throw error;
       return count || 0;

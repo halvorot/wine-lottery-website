@@ -39,6 +39,13 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
   const { 
     todayEntries: entries, 
     totalCount: totalEntries,
+    sortColumn: entriesSortColumn,
+    sortDirection: entriesSortDirection,
+    page: entriesPage,
+    setPage: setEntriesPage,
+    handleSort: handleEntriesSort,
+    selectedDate: entriesSelectedDate,
+    setSelectedDate: setEntriesSelectedDate,
   } = useLotteryEntries();
 
   return (
@@ -71,7 +78,16 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
           onDateChange={setSelectedDate}
         />
 
-        <EntriesSection entries={entries || []} />
+        <EntriesSection 
+          entries={entries || []}
+          sortColumn={entriesSortColumn}
+          sortDirection={entriesSortDirection}
+          page={entriesPage}
+          onPageChange={setEntriesPage}
+          onSort={handleEntriesSort}
+          selectedDate={entriesSelectedDate}
+          onDateChange={setEntriesSelectedDate}
+        />
       </div>
     </div>
   );
