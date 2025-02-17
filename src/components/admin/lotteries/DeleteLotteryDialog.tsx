@@ -24,12 +24,21 @@ export function DeleteLotteryDialog({ lotteryId, onOpenChange }: DeleteLotteryDi
 
   const deleteLotteryMutation = useMutation({
     mutationFn: async (lotteryId: string) => {
-      const { error } = await supabase
+      // First, delete the lottery_status record
+      const { error: statusError } = await supabase
+        .from("lottery_status")
+        .delete()
+        .eq("lottery_id", lotteryId);
+
+      if (statusError) throw statusError;
+
+      // Then, delete the lottery itself
+      const { error: lotteryError } = await supabase
         .from("lotteries")
         .delete()
         .eq("id", lotteryId);
 
-      if (error) throw error;
+      if (lotteryError) throw lotteryError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lotteries"] });
