@@ -60,10 +60,20 @@ export function PasswordVerificationModal({
         // Not verified today, create new verification
         const { error } = await supabase
           .from("password_verifications")
-          .insert([{ is_admin: isAdmin }]);
+          .insert([{}]);
 
         if (error) {
           throw error;
+        }
+
+        // If this is an admin login, make sure they are in the admin_users table
+        if (isAdmin) {
+          const { data: session } = await supabase.auth.getSession();
+          if (session?.session?.user?.id) {
+            await supabase
+              .from("admin_users")
+              .upsert([{ user_id: session.session.user.id }]);
+          }
         }
 
         toast({
