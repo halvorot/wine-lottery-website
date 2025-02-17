@@ -27,27 +27,6 @@ export type Database = {
         }
         Relationships: []
       }
-      daily_passwords: {
-        Row: {
-          created_at: string
-          id: string
-          password: string
-          valid_date: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          password: string
-          valid_date?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          password?: string
-          valid_date?: string
-        }
-        Relationships: []
-      }
       lotteries: {
         Row: {
           created_at: string
@@ -114,6 +93,35 @@ export type Database = {
             foreignKeyName: "lottery_entries_lottery_id_fkey"
             columns: ["lottery_id"]
             isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lottery_passwords: {
+        Row: {
+          created_at: string
+          id: string
+          lottery_id: string
+          password: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lottery_id: string
+          password: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lottery_id?: string
+          password?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_passwords_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: true
             referencedRelation: "lotteries"
             referencedColumns: ["id"]
           },
@@ -201,22 +209,30 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          lottery_id: string | null
           user_ip: string | null
-          verified_date: string
         }
         Insert: {
           created_at?: string | null
           id?: string
+          lottery_id?: string | null
           user_ip?: string | null
-          verified_date?: string
         }
         Update: {
           created_at?: string | null
           id?: string
+          lottery_id?: string | null
           user_ip?: string | null
-          verified_date?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "password_verifications_lottery_id_fkey"
+            columns: ["lottery_id"]
+            isOneToOne: false
+            referencedRelation: "lotteries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prizes: {
         Row: {

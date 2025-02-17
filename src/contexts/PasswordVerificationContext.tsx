@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 interface PasswordVerificationContextType {
   isVerified: boolean;
@@ -20,6 +21,7 @@ export function PasswordVerificationProvider({
   children: React.ReactNode;
 }) {
   const [isVerified, setIsVerified] = useState(false);
+  const { data: activeLottery } = useActiveLottery();
 
   const checkVerification = async () => {
     try {
@@ -32,11 +34,15 @@ export function PasswordVerificationProvider({
         return;
       }
 
-      const today = new Date().toISOString().split("T")[0];
+      if (!activeLottery) {
+        setIsVerified(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("password_verifications")
         .select("*")
-        .eq("verified_date", today)
+        .eq("lottery_id", activeLottery.id)
         .maybeSingle();
 
       if (error) throw error;
@@ -49,7 +55,7 @@ export function PasswordVerificationProvider({
 
   useEffect(() => {
     checkVerification();
-  }, []);
+  }, [activeLottery?.id]);
 
   return (
     <PasswordVerificationContext.Provider
