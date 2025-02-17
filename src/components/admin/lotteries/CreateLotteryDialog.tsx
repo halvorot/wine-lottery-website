@@ -25,6 +25,7 @@ export function CreateLotteryDialog() {
   const [open, setOpen] = useState(false);
   const [drawDate, setDrawDate] = useState<Date>();
   const [drawTime, setDrawTime] = useState("12:00");
+  const [password, setPassword] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -32,6 +33,7 @@ export function CreateLotteryDialog() {
   const createLotteryMutation = useMutation({
     mutationFn: async () => {
       if (!drawDate) throw new Error("Draw date is required");
+      if (!password) throw new Error("Password is required");
 
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
@@ -39,7 +41,7 @@ export function CreateLotteryDialog() {
       // Format the date in YYYY-MM-DD format using the local timezone
       const formattedDate = format(drawDate, 'yyyy-MM-dd');
 
-      const { data, error } = await supabase
+      const { data: lotteryData, error: lotteryError } = await supabase
         .from("lotteries")
         .insert({
           draw_date: formattedDate,
@@ -50,13 +52,31 @@ export function CreateLotteryDialog() {
         .select()
         .single();
 
-      if (error) {
-        if (error.code === '23505') { // Unique constraint violation
+      if (lotteryError) {
+        if (lotteryError.code === '23505') { // Unique constraint violation
           throw new Error("A lottery already exists for this date");
         }
-        throw error;
+        throw lotteryError;
       }
-      return data;
+
+      // Create the lottery password
+      const { error: passwordError } = await supabase
+        .from("lottery_passwords")
+        .insert({
+          lottery_id: lotteryData.id,
+          password: password,
+        });
+
+      if (passwordError) {
+        // If password creation fails, delete the lottery to maintain consistency
+        await supabase
+          .from("lotteries")
+          .delete()
+          .eq('id', lotteryData.id);
+        throw passwordError;
+      }
+
+      return lotteryData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["active-lottery"] });
@@ -66,6 +86,10 @@ export function CreateLotteryDialog() {
         title: "Success",
         description: "Lottery created successfully",
       });
+      // Reset form
+      setDrawDate(undefined);
+      setDrawTime("12:00");
+      setPassword("");
     },
     onError: (error) => {
       console.error("Error creating lottery:", error);
@@ -97,7 +121,7 @@ export function CreateLotteryDialog() {
         <DialogHeader>
           <DialogTitle>Create New Lottery</DialogTitle>
           <DialogDescription>
-            Set up a new lottery event. Choose the draw date and time carefully.
+            Set up a new lottery event. Choose the draw date, time, and set a password for participants.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -154,11 +178,22 @@ export function CreateLotteryDialog() {
               />
             </div>
           </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Lottery Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter lottery password"
+              required
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button
             onClick={handleCreate}
-            disabled={!drawDate || !drawTime || createLotteryMutation.isPending}
+            disabled={!drawDate || !drawTime || !password || createLotteryMutation.isPending}
           >
             {createLotteryMutation.isPending ? "Creating..." : "Create Lottery"}
           </Button>
