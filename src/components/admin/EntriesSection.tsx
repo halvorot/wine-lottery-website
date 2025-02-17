@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SortColumn, SortDirection } from "@/components/lottery/types";
 import { EntryDatePicker } from "./entries/EntryDatePicker";
 import { EntriesTable } from "./entries/EntriesTable";
 import { DeleteEntryDialog } from "./entries/DeleteEntryDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Entry {
   id: string;
@@ -36,11 +38,39 @@ export const EntriesSection = ({
 }: EntriesSectionProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [localEntries, setLocalEntries] = useState(entries);
   const entriesPerPage = 10;
-  const totalEntries = entries.length;
+  const totalEntries = localEntries.length;
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
   const startIndex = (page - 1) * entriesPerPage;
   const endIndex = Math.min(startIndex + entriesPerPage, totalEntries);
+
+  useEffect(() => {
+    setLocalEntries(entries);
+  }, [entries]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('lottery_entries_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'lottery_entries'
+        },
+        (payload) => {
+          setLocalEntries(current => 
+            current.filter(entry => entry.id !== payload.old.id)
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleDeleteClick = (entry: Entry) => {
     setSelectedEntry(entry);
@@ -58,7 +88,7 @@ export const EntriesSection = ({
       </div>
 
       <EntriesTable
-        entries={entries}
+        entries={localEntries}
         startIndex={startIndex}
         endIndex={endIndex}
         sortColumn={sortColumn}
@@ -97,7 +127,7 @@ export const EntriesSection = ({
         selectedEntry={selectedEntry}
         onEntryDeleted={() => {
           setSelectedEntry(null);
-          // The parent component will handle the refresh through React Query
+          // The real-time subscription will handle updating the UI
         }}
       />
     </div>
