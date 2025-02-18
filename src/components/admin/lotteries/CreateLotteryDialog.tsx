@@ -86,10 +86,7 @@ export function CreateLotteryDialog() {
         title: "Success",
         description: "Lottery created successfully",
       });
-      // Reset form
-      setDrawDate(undefined);
-      setDrawTime("12:00");
-      setPassword("");
+      resetForm();
     },
     onError: (error) => {
       console.error("Error creating lottery:", error);
@@ -100,6 +97,12 @@ export function CreateLotteryDialog() {
       });
     },
   });
+
+  const resetForm = () => {
+    setDrawDate(undefined);
+    setDrawTime("12:00");
+    setPassword("");
+  };
 
   const handleCreate = () => {
     createLotteryMutation.mutate();
@@ -113,7 +116,10 @@ export function CreateLotteryDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) resetForm();
+    }}>
       <DialogTrigger asChild>
         <Button variant="default">Create New Lottery</Button>
       </DialogTrigger>
