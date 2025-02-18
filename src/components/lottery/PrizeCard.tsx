@@ -35,13 +35,8 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
         </Badge>
       )}
       <h3 className="text-xl font-semibold mb-2">
-        {index === 0
-          ? "Grand Prize"
-          : index === 1
-          ? "Second Prize"
-          : "Third Prize"}
+        {prize.name}
       </h3>
-      <p>{prize.name}</p>
       {prize.description && (
         <p className="text-sm text-muted-foreground mt-2">{prize.description}</p>
       )}
