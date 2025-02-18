@@ -39,7 +39,7 @@ export const LiveDrawTab = () => {
         .from('prizes')
         .select('*')
         .eq("lottery_id", activeLottery.id)
-        .order("quantity", { ascending: false });
+        .order('price', { ascending: false, nullsLast: true });
 
       if (error) throw error;
       return data || [];
@@ -113,12 +113,12 @@ export const LiveDrawTab = () => {
       return;
     }
 
-    // Get available prizes for the active lottery
+    // Get available prizes for the active lottery (not yet awarded)
     const { data: availablePrizes, error: prizesError } = await supabase
         .from('prizes')
         .select('*')
         .eq("lottery_id", activeLottery.id)
-        .gt("remaining_quantity", 0);
+        .not('id', 'in', (winners || []).map(w => w.prize_id).filter(Boolean));
 
     if (prizesError || !availablePrizes || availablePrizes.length === 0) {
       toast({
@@ -151,19 +151,13 @@ export const LiveDrawTab = () => {
       return;
     }
 
-    // Update prize remaining quantity
-    const { error: updateError } = await supabase
-      .from('prizes')
-      .update({ remaining_quantity: randomPrize.remaining_quantity - 1 })
-      .eq("id", randomPrize.id);
-
     // Mark entry as drawn
     const { error: updateEntryError } = await supabase
       .from('lottery_entries')
       .update({ drawn: true })
       .eq("id", randomEntry.id);
 
-    if (updateError || updateEntryError) {
+    if (updateEntryError) {
       toast({
         title: "Error",
         description: "Failed to update records",

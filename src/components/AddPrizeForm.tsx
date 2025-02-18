@@ -28,7 +28,7 @@ import { format } from "date-fns";
 type PrizeFormData = {
   name: string;
   description: string;
-  quantity: number;
+  price: number;
   lotteryId: string;
 };
 
@@ -55,7 +55,7 @@ export function AddPrizeForm() {
     defaultValues: {
       name: "",
       description: "",
-      quantity: 1,
+      price: 0,
       lotteryId: "",
     },
   });
@@ -96,8 +96,7 @@ export function AddPrizeForm() {
       const { error } = await supabase.from("prizes").insert({
         name: data.name,
         description: data.description,
-        quantity: data.quantity,
-        remaining_quantity: data.quantity,
+        price: data.price,
         draw_date: lottery.draw_date,
         created_by: session.user.id,
         lottery_id: data.lotteryId
@@ -169,16 +168,17 @@ export function AddPrizeForm() {
 
         <FormField
           control={form.control}
-          name="quantity"
+          name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quantity</FormLabel>
+              <FormLabel>Price (USD)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
-                  min="1"
+                  min="0"
+                  step="0.01"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
               </FormControl>
               <FormMessage />

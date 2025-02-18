@@ -26,12 +26,14 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
         isDrawn && "bg-cream/50"
       )}
     >
-      <Badge 
-        variant={prize.remaining_quantity > 0 ? "secondary" : "destructive"}
-        className="absolute -top-2 -right-2"
-      >
-        {prize.remaining_quantity} left
-      </Badge>
+      {prize.price && (
+        <Badge 
+          variant="secondary"
+          className="absolute -top-2 -right-2"
+        >
+          ${prize.price.toFixed(2)}
+        </Badge>
+      )}
       <h3 className="text-xl font-semibold mb-2">
         {index === 0
           ? "Grand Prize"
@@ -50,7 +52,7 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
       )}
       {prizeWinners.length > 0 && (
         <div className="mt-4 text-sm border-t border-gray-200 pt-2">
-          <p className="font-semibold">Winners:</p>
+          <p className="font-semibold">Winner:</p>
           {prizeWinners.map(winner => (
             <p key={winner.id} className="text-primary">
               {winner.entry.name}
