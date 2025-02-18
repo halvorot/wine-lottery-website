@@ -20,18 +20,18 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
   const isDrawn = prizeWinners.length > 0;
 
   return (
-    <div 
+    <div
       className={cn(
         "bg-cream rounded-lg p-6 relative transition-colors",
         isDrawn && "bg-cream/50"
       )}
     >
       {prize.price !== null && (
-        <Badge 
+        <Badge
           variant="secondary"
           className="absolute -top-2 -right-2"
         >
-          ${Number(prize.price).toFixed(2)}
+          {Number(prize.price).toFixed(0)} kr
         </Badge>
       )}
       <h3 className="text-xl font-semibold mb-2">
