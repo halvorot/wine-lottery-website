@@ -243,8 +243,7 @@ export type Database = {
           id: string
           lottery_id: string
           name: string
-          quantity: number
-          remaining_quantity: number
+          price: number | null
         }
         Insert: {
           created_at?: string
@@ -254,8 +253,7 @@ export type Database = {
           id?: string
           lottery_id: string
           name: string
-          quantity: number
-          remaining_quantity: number
+          price?: number | null
         }
         Update: {
           created_at?: string
@@ -265,8 +263,7 @@ export type Database = {
           id?: string
           lottery_id?: string
           name?: string
-          quantity?: number
-          remaining_quantity?: number
+          price?: number | null
         }
         Relationships: [
           {

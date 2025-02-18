@@ -93,14 +93,16 @@ export function AddPrizeForm() {
         return;
       }
 
-      const { error } = await supabase.from("prizes").insert({
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        draw_date: lottery.draw_date,
-        created_by: session.user.id,
-        lottery_id: data.lotteryId
-      });
+      const { error } = await supabase
+        .from("prizes")
+        .insert({
+          name: data.name,
+          description: data.description,
+          price: data.price || null,
+          draw_date: lottery.draw_date,
+          created_by: session.user.id,
+          lottery_id: data.lotteryId,
+        });
 
       if (error) throw error;
 

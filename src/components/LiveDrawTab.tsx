@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
@@ -39,7 +38,7 @@ export const LiveDrawTab = () => {
         .from('prizes')
         .select('*')
         .eq("lottery_id", activeLottery.id)
-        .order('price', { ascending: false, nullsLast: true });
+        .order('price', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
       return data || [];

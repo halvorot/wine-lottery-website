@@ -26,12 +26,12 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
         isDrawn && "bg-cream/50"
       )}
     >
-      {prize.price && (
+      {prize.price !== null && (
         <Badge 
           variant="secondary"
           className="absolute -top-2 -right-2"
         >
-          ${prize.price.toFixed(2)}
+          ${Number(prize.price).toFixed(2)}
         </Badge>
       )}
       <h3 className="text-xl font-semibold mb-2">
