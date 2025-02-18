@@ -50,7 +50,7 @@ export function AddPrizeForm() {
       return data;
     },
   });
-  
+
   const form = useForm<PrizeFormData>({
     defaultValues: {
       name: "",
@@ -63,7 +63,7 @@ export function AddPrizeForm() {
   const onSubmit = async (data: PrizeFormData) => {
     try {
       setIsLoading(true);
-      
+
       if (!data.lotteryId) {
         toast({
           title: "Error",
@@ -81,7 +81,7 @@ export function AddPrizeForm() {
         .single();
 
       if (lotteryError) throw lotteryError;
-      
+
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -173,7 +173,7 @@ export function AddPrizeForm() {
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price (USD)</FormLabel>
+              <FormLabel>Price (NOK)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -181,6 +181,7 @@ export function AddPrizeForm() {
                   step="0.01"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
+
                 />
               </FormControl>
               <FormMessage />
@@ -202,8 +203,8 @@ export function AddPrizeForm() {
                 </FormControl>
                 <SelectContent className="bg-white dark:bg-gray-800 border shadow-lg">
                   {lotteries.map((lottery) => (
-                    <SelectItem 
-                      key={lottery.id} 
+                    <SelectItem
+                      key={lottery.id}
                       value={lottery.id}
                       className="hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
