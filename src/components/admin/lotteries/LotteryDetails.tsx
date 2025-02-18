@@ -12,8 +12,7 @@ interface Prize {
   id: string;
   name: string;
   description: string | null;
-  quantity: number;
-  remaining_quantity: number;
+  price: number;
   created_at: string;
 }
 
@@ -91,7 +90,7 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
   const sortedPrizes = prizes?.sort((a, b) => {
     const aValue = (a as any)[prizeSort.column];
     const bValue = (b as any)[prizeSort.column];
-    return prizeSort.direction === "asc" 
+    return prizeSort.direction === "asc"
       ? aValue > bValue ? 1 : -1
       : aValue < bValue ? 1 : -1;
   });
@@ -125,9 +124,9 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
     { key: "name", label: "Name", sortable: true },
     { key: "email", label: "Email", sortable: true },
     { key: "num_tickets", label: "Tickets", sortable: true },
-    { 
-      key: "created_at", 
-      label: "Entry Time", 
+    {
+      key: "created_at",
+      label: "Entry Time",
       sortable: true,
       render: (entry: Entry) => format(new Date(entry.created_at), "PPP p")
     },
