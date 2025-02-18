@@ -29,7 +29,7 @@ export const PrizeCard = ({ prize, index, winners, baseChance }: PrizeCardProps)
       {prize.price !== null && (
         <Badge
           variant="secondary"
-          className="absolute -top-4 -right-4"
+          className="absolute top-2 right-2"
         >
           {Number(prize.price).toFixed(0)} kr
         </Badge>
