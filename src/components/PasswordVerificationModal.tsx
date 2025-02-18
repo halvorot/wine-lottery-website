@@ -12,10 +12,15 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
+import { createHash } from "crypto";
 
 interface PasswordVerificationModalProps {
   isOpen: boolean;
   onVerified: () => void;
+}
+
+function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex');
 }
 
 export function PasswordVerificationModal({
@@ -41,6 +46,9 @@ export function PasswordVerificationModal({
         return;
       }
 
+      const hashedPassword = hashPassword(password);
+      const ADMIN_HASH = hashPassword("admin2024"); // Hash the admin password too
+
       // Get the lottery password
       const { data: passwordData, error: passwordError } = await supabase
         .from("lottery_passwords")
@@ -50,9 +58,8 @@ export function PasswordVerificationModal({
 
       if (passwordError) throw passwordError;
 
-      const ADMIN_PASSWORD = "admin2024"; // Keep admin password for testing
-      const isAdmin = password === ADMIN_PASSWORD;
-      const isValidPassword = password === passwordData?.password || isAdmin;
+      const isAdmin = hashedPassword === ADMIN_HASH;
+      const isValidPassword = hashedPassword === passwordData?.password || isAdmin;
 
       if (isValidPassword) {
         // Check if already verified for this lottery
