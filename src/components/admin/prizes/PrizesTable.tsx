@@ -10,13 +10,12 @@ interface Prize {
   id: string;
   name: string;
   description: string | null;
-  quantity: number;
-  remaining_quantity: number;
+  price: number | null;
   draw_date: string;
   created_at: string;
 }
 
-type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortColumn = "name" | "price" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 interface PrizesTableProps {
@@ -60,13 +59,10 @@ export function PrizesTable({
       render: (prize: Prize) => prize.description || "-"
     },
     { 
-      key: "quantity", 
-      label: "Quantity", 
-      sortable: true 
-    },
-    { 
-      key: "remaining_quantity", 
-      label: "Remaining",
+      key: "price", 
+      label: "Price", 
+      sortable: true,
+      render: (prize: Prize) => prize.price ? `${prize.price} kr` : "-"
     },
     { 
       key: "draw_date", 
