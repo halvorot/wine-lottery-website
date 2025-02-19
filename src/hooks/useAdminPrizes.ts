@@ -48,7 +48,15 @@ export function useAdminPrizes(
     queryFn: async () => {
       let query = supabase
         .from("prizes")
-        .select("*", { count: "exact" })
+        .select(`
+          id,
+          name,
+          description,
+          quantity,
+          remaining_quantity,
+          draw_date,
+          created_at
+        `)
         .order(sortColumn, { ascending: sortDirection === "asc" })
         .range((page - 1) * entriesPerPage, page * entriesPerPage - 1);
 
@@ -58,7 +66,13 @@ export function useAdminPrizes(
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      
+      // Ensure default values for quantity and remaining_quantity
+      return (data || []).map(prize => ({
+        ...prize,
+        quantity: prize.quantity || 0,
+        remaining_quantity: prize.remaining_quantity || 0
+      }));
     },
   });
 

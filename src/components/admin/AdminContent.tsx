@@ -11,6 +11,16 @@ import { useToggleLottery } from "@/hooks/useToggleLottery";
 import { useAdminState } from "@/hooks/useAdminState";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 
+interface Prize {
+  id: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  remaining_quantity: number;
+  draw_date: string;
+  created_at: string;
+}
+
 interface AdminContentProps {
   onLogout: () => Promise<void>;
 }
