@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 
-type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortColumn = "name" | "price" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 export function useAdminState() {

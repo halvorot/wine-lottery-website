@@ -1,4 +1,3 @@
-
 import { AddPrizeForm } from "@/components/AddPrizeForm";
 import { PrizesTable } from "@/components/admin/prizes/PrizesTable";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,13 +12,12 @@ interface Prize {
   id: string;
   name: string;
   description: string | null;
-  quantity: number;
-  remaining_quantity: number;
+  price: number | null;
   draw_date: string;
   created_at: string;
 }
 
-type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortColumn = "name" | "price" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 interface PrizesSectionProps {
