@@ -39,10 +39,15 @@ export function PasswordVerificationProvider({
         return;
       }
 
+      // Get user's IP address
+      const response = await fetch('https://api.ipify.org?format=json');
+      const { ip } = await response.json();
+
       const { data, error } = await supabase
         .from("password_verifications")
         .select("*")
         .eq("lottery_id", activeLottery.id)
+        .eq("user_ip", ip)
         .maybeSingle();
 
       if (error) throw error;

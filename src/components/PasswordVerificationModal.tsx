@@ -58,11 +58,16 @@ export function PasswordVerificationModal({
       const isValidPassword = hashedPassword === passwordData?.password || isAdmin;
 
       if (isValidPassword) {
-        // Check if already verified for this lottery
+        // Get user's IP address
+        const response = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await response.json();
+
+        // Check if already verified for this lottery and IP
         const { data: existingVerification } = await supabase
           .from("password_verifications")
           .select("*")
           .eq("lottery_id", activeLottery.id)
+          .eq("user_ip", ip)
           .maybeSingle();
 
         if (existingVerification) {
@@ -74,10 +79,13 @@ export function PasswordVerificationModal({
           return;
         }
 
-        // Not verified for this lottery, create new verification
+        // Not verified for this lottery and IP, create new verification
         const { error } = await supabase
           .from("password_verifications")
-          .insert([{ lottery_id: activeLottery.id }]);
+          .insert([{ 
+            lottery_id: activeLottery.id,
+            user_ip: ip
+          }]);
 
         if (error) {
           throw error;
