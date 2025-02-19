@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,9 @@ import { LotteryDetails } from "./LotteryDetails";
 interface Lottery {
   id: string;
   draw_date: string;
+  draw_time: string;
   is_completed: boolean;
-  lottery_status?: {
+  lottery_status: {
     is_locked: boolean;
   };
 }
@@ -24,6 +24,14 @@ interface LotteryItemProps {
 }
 
 export function LotteryItem({ lottery, onDelete }: LotteryItemProps) {
+  const formattedDateTime = lottery.draw_date && lottery.draw_time
+    ? new Date(`${lottery.draw_date}T${lottery.draw_time}`).toLocaleString('no-NB', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+        hour12: false
+      })
+    : 'Not set';
+
   return (
     <AccordionItem value={lottery.id}>
       <div className="flex items-center justify-between">
@@ -31,7 +39,7 @@ export function LotteryItem({ lottery, onDelete }: LotteryItemProps) {
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
               <p className="font-medium">
-                Draw Date: {format(new Date(lottery.draw_date), "PPP")}
+                Draw Date: {formattedDateTime}
               </p>
               <span className={`text-sm px-2 py-0.5 rounded-full ${
                 lottery.lottery_status?.is_locked 

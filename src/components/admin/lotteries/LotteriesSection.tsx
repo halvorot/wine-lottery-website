@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -11,6 +10,7 @@ import { LotteryItem } from "./LotteryItem";
 interface Lottery {
   id: string;
   draw_date: string;
+  draw_time: string;
   created_at: string;
   is_completed: boolean;
   lottery_status: {
