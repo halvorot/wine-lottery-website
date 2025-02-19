@@ -15,8 +15,7 @@ interface Prize {
   id: string;
   name: string;
   description: string | null;
-  quantity: number;
-  remaining_quantity: number;
+  price: number | null;
   draw_date: string;
   created_at: string;
 }

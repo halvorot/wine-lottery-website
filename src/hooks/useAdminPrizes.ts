@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
-type SortColumn = "name" | "quantity" | "draw_date" | "created_at";
+type SortColumn = "name" | "price" | "draw_date" | "created_at";
 type SortDirection = "asc" | "desc";
 
 export function useAdminPrizes(
@@ -52,8 +52,7 @@ export function useAdminPrizes(
           id,
           name,
           description,
-          quantity,
-          remaining_quantity,
+          price,
           draw_date,
           created_at
         `)
@@ -66,13 +65,7 @@ export function useAdminPrizes(
 
       const { data, error } = await query;
       if (error) throw error;
-      
-      // Ensure default values for quantity and remaining_quantity
-      return (data || []).map(prize => ({
-        ...prize,
-        quantity: prize.quantity || 0,
-        remaining_quantity: prize.remaining_quantity || 0
-      }));
+      return data || [];
     },
   });
 
