@@ -210,19 +210,19 @@ export type Database = {
           created_at: string | null
           id: string
           lottery_id: string | null
-          user_ip: string | null
+          user_ip: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           lottery_id?: string | null
-          user_ip?: string | null
+          user_ip: string
         }
         Update: {
           created_at?: string | null
           id?: string
           lottery_id?: string | null
-          user_ip?: string | null
+          user_ip?: string
         }
         Relationships: [
           {

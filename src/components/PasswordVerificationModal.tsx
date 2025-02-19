@@ -43,7 +43,7 @@ export function PasswordVerificationModal({
       }
 
       const hashedPassword = await hashPassword(password);
-      const ADMIN_HASH = await hashPassword("admin2024"); // Hash the admin password too
+      const ADMIN_HASH = await hashPassword("admin2024");
 
       // Get the lottery password
       const { data: passwordData, error: passwordError } = await supabase
@@ -91,7 +91,7 @@ export function PasswordVerificationModal({
           throw error;
         }
 
-        // If this is an admin login, make sure they are in the admin_users table
+        // If this is an admin login, add to admin_users table
         if (isAdmin) {
           const { data: session } = await supabase.auth.getSession();
           if (session?.session?.user?.id) {
