@@ -19,6 +19,9 @@ export function useLotteryStatus() {
         .maybeSingle();
       
       if (fetchError) throw fetchError;
+
+      const drawDateTime = new Date(`${activeLottery.draw_date}T${activeLottery.draw_time}`);
+      const hasReachedDrawTime = drawDateTime <= new Date();
       
       if (!existingStatus) {
         // Create a new locked status if none exists
@@ -34,6 +37,24 @@ export function useLotteryStatus() {
           
         if (createError) throw createError;
         return newStatus;
+      }
+
+      // If lottery has reached draw time and hasn't been manually unlocked after draw time
+      // (locked_at will be before draw time for initial lock, after for manual locks)
+      if (hasReachedDrawTime && !existingStatus.is_locked && 
+          (!existingStatus.locked_at || new Date(existingStatus.locked_at) < drawDateTime)) {
+        const { data: updatedStatus, error: updateError } = await supabase
+          .from("lottery_status")
+          .update({ 
+            is_locked: true,
+            locked_at: new Date().toISOString()
+          })
+          .eq("lottery_id", activeLottery.id)
+          .select()
+          .single();
+          
+        if (updateError) throw updateError;
+        return updatedStatus;
       }
       
       return existingStatus;
