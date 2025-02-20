@@ -11,11 +11,10 @@ export function useLotteryStatus() {
     queryFn: async () => {
       if (!activeLottery) return null;
 
-      // First check if lottery should be locked based on time
-      const { data: shouldLock } = await supabase
-        .rpc('should_lock_lottery', { target_lottery_id: activeLottery.id });
+      // Check if lottery has reached draw time
+      const hasReachedDrawTime = new Date(`${activeLottery.draw_date}T${activeLottery.draw_time}`) <= new Date();
 
-      if (shouldLock) {
+      if (hasReachedDrawTime) {
         // If lottery should be locked, update the status
         const { data: updatedStatus, error: updateError } = await supabase
           .from("lottery_status")
