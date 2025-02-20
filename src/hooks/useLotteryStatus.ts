@@ -11,26 +11,7 @@ export function useLotteryStatus() {
     queryFn: async () => {
       if (!activeLottery) return null;
 
-      // Check if lottery has reached draw time
-      const hasReachedDrawTime = new Date(`${activeLottery.draw_date}T${activeLottery.draw_time}`) <= new Date();
-
-      if (hasReachedDrawTime) {
-        // If lottery should be locked, update the status
-        const { data: updatedStatus, error: updateError } = await supabase
-          .from("lottery_status")
-          .update({ 
-            is_locked: true,
-            locked_at: new Date().toISOString()
-          })
-          .eq("lottery_id", activeLottery.id)
-          .select()
-          .single();
-          
-        if (updateError) throw updateError;
-        return updatedStatus;
-      }
-
-      // If not expired, get current status
+      // Get current status
       const { data: existingStatus, error: fetchError } = await supabase
         .from("lottery_status")
         .select("*")
@@ -40,11 +21,13 @@ export function useLotteryStatus() {
       if (fetchError) throw fetchError;
       
       if (!existingStatus) {
+        // Create a new locked status if none exists
         const { data: newStatus, error: createError } = await supabase
           .from("lottery_status")
           .insert([{ 
             lottery_id: activeLottery.id,
-            is_locked: false 
+            is_locked: true,
+            locked_at: new Date().toISOString()
           }])
           .select()
           .single();
