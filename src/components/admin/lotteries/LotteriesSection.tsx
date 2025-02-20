@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -54,20 +55,23 @@ export function LotteriesSection() {
         <CreateLotteryDialog />
       </div>
 
-      <Accordion type="single" collapsible className="w-full">
-        {lotteries?.map((lottery) => (
-          <LotteryItem
-            key={lottery.id}
-            lottery={lottery}
-            onDelete={setDeletingLotteryId}
-          />
-        ))}
-      </Accordion>
-
-      {(!lotteries || lotteries.length === 0) && (
-        <p className="text-center text-muted-foreground py-8">
-          No lotteries found. Create one to get started.
-        </p>
+      {(!lotteries || lotteries.length === 0) ? (
+        <div className="text-center p-8 bg-cream/50 rounded-lg">
+          <p className="text-lg text-wine font-semibold mb-2">No Lotteries Found</p>
+          <p className="text-charcoal/80 mb-4">
+            Get started by creating your first lottery event using the button above.
+          </p>
+        </div>
+      ) : (
+        <Accordion type="single" collapsible className="w-full">
+          {lotteries.map((lottery) => (
+            <LotteryItem
+              key={lottery.id}
+              lottery={lottery}
+              onDelete={setDeletingLotteryId}
+            />
+          ))}
+        </Accordion>
       )}
 
       <DeleteLotteryDialog
