@@ -51,9 +51,12 @@ export function LotteryEntryForm() {
     );
   }
 
+  // Check if lottery has reached draw time
+  const hasReachedDrawTime = new Date(`${activeLottery.draw_date}T${activeLottery.draw_time}`) <= new Date();
+
   return (
     <div className="space-y-8">
-      {!lotteryStatus?.is_locked && (
+      {!lotteryStatus?.is_locked && !hasReachedDrawTime && (
         <>
           <div className="text-center text-sm text-muted-foreground">
             <p>To update an existing entry, simply enter your email address and the form will be pre-filled with your current entry details.</p>
@@ -69,10 +72,12 @@ export function LotteryEntryForm() {
         </>
       )}
 
-      {lotteryStatus?.is_locked && (
+      {(lotteryStatus?.is_locked || hasReachedDrawTime) && (
         <div className="text-center p-4 bg-yellow-50 rounded-lg">
           <p className="text-yellow-800">
-            Today's lottery entries are currently locked. No new entries can be submitted.
+            {hasReachedDrawTime 
+              ? "This lottery's draw time has passed. No new entries can be submitted."
+              : "Today's lottery entries are currently locked. No new entries can be submitted."}
           </p>
         </div>
       )}
