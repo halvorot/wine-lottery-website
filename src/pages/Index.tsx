@@ -20,6 +20,10 @@ const Index = () => {
     setShowPasswordModal(false);
   };
 
+  const handleCloseModal = () => {
+    setShowPasswordModal(false);
+  };
+
   const shouldShowPasswordVerification = useCallback((tab: string) => {
     // Don't show password verification for admin tab or if user is admin
     if (tab === "admin" || isAdmin) return false;
@@ -85,6 +89,7 @@ const Index = () => {
       <PasswordVerificationModal
         isOpen={showPasswordModal}
         onVerified={handleVerified}
+        onClose={handleCloseModal}
       />
     </div>
   );
