@@ -7,15 +7,17 @@ import { PasswordVerificationModal } from "@/components/PasswordVerificationModa
 import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 const Index = () => {
   const { isVerified, setVerified } = usePasswordVerification();
   const { data: activeLottery, isLoading: isLoadingLottery } = useActiveLottery();
   const { isAdmin } = useAuthStatus();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const handleVerified = () => {
     setVerified(true);
+    setShowPasswordModal(false);
   };
 
   const shouldShowPasswordVerification = useCallback((tab: string) => {
@@ -34,10 +36,12 @@ const Index = () => {
       return (
         <div className="text-center p-8">
           <p className="mb-4">Please verify the lottery password to view this content.</p>
-          <PasswordVerificationModal
-            isOpen={true}
-            onVerified={handleVerified}
-          />
+          <button 
+            onClick={() => setShowPasswordModal(true)}
+            className="px-4 py-2 bg-wine text-white rounded hover:bg-wine/90 transition-colors"
+          >
+            Enter Password
+          </button>
         </div>
       );
     }
@@ -77,6 +81,11 @@ const Index = () => {
           )}
         </Tabs>
       </main>
+
+      <PasswordVerificationModal
+        isOpen={showPasswordModal}
+        onVerified={handleVerified}
+      />
     </div>
   );
 };
