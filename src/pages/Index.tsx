@@ -29,6 +29,21 @@ const Index = () => {
     return !isVerified && (tab === "lottery" || tab === "live");
   }, [isVerified, activeLottery, isAdmin]);
 
+  const renderTabContent = (tab: string, content: React.ReactNode) => {
+    if (shouldShowPasswordVerification(tab)) {
+      return (
+        <div className="text-center p-8">
+          <p className="mb-4">Please verify the lottery password to view this content.</p>
+          <PasswordVerificationModal
+            isOpen={true}
+            onVerified={handleVerified}
+          />
+        </div>
+      );
+    }
+    return content;
+  };
+
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -48,19 +63,11 @@ const Index = () => {
           ) : (
             <>
               <TabsContent value="lottery">
-                <PasswordVerificationModal
-                  isOpen={shouldShowPasswordVerification("lottery")}
-                  onVerified={handleVerified}
-                />
-                <LotteryTab />
+                {renderTabContent("lottery", <LotteryTab />)}
               </TabsContent>
 
               <TabsContent value="live">
-                <PasswordVerificationModal
-                  isOpen={shouldShowPasswordVerification("live")}
-                  onVerified={handleVerified}
-                />
-                <LiveDrawTab />
+                {renderTabContent("live", <LiveDrawTab />)}
               </TabsContent>
 
               <TabsContent value="admin">
