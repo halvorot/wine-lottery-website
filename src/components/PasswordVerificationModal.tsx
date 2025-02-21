@@ -17,11 +17,13 @@ import { hashPassword } from "@/utils/crypto";
 interface PasswordVerificationModalProps {
   isOpen: boolean;
   onVerified: () => void;
+  onClose?: () => void;
 }
 
 export function PasswordVerificationModal({
   isOpen,
   onVerified,
+  onClose,
 }: PasswordVerificationModalProps) {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +131,7 @@ export function PasswordVerificationModal({
   };
 
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Lottery Password Required</DialogTitle>
