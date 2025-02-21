@@ -6,26 +6,28 @@ import { AdminDashboard } from "@/components/AdminDashboard";
 import { PasswordVerificationModal } from "@/components/PasswordVerificationModal";
 import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useCallback } from "react";
 
 const Index = () => {
   const { isVerified, setVerified } = usePasswordVerification();
   const { data: activeLottery, isLoading: isLoadingLottery } = useActiveLottery();
+  const { isAdmin } = useAuthStatus();
 
   const handleVerified = () => {
     setVerified(true);
   };
 
   const shouldShowPasswordVerification = useCallback((tab: string) => {
-    // Don't show password verification for admin tab
-    if (tab === "admin") return false;
+    // Don't show password verification for admin tab or if user is admin
+    if (tab === "admin" || isAdmin) return false;
     
     // Don't show password verification if there's no active lottery
     if (!activeLottery) return false;
     
     // Show password verification for lottery and live tabs if not verified
     return !isVerified && (tab === "lottery" || tab === "live");
-  }, [isVerified, activeLottery]);
+  }, [isVerified, activeLottery, isAdmin]);
 
   return (
     <div className="min-h-screen bg-white text-charcoal">
