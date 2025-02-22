@@ -52,6 +52,18 @@ const Index = () => {
     return content;
   };
 
+  // Only show loading state during initial data fetch
+  if (isLoadingLottery) {
+    return (
+      <div className="min-h-screen bg-white text-charcoal flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="animate-spin h-8 w-8 border-4 border-wine border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -62,27 +74,17 @@ const Index = () => {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
 
-          {/* Show loading state while checking for active lottery */}
-          {isLoadingLottery ? (
-            <div className="text-center p-8">
-              <div className="animate-spin h-8 w-8 border-4 border-wine border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p>Loading...</p>
-            </div>
-          ) : (
-            <>
-              <TabsContent value="lottery">
-                {renderTabContent("lottery", <LotteryTab />)}
-              </TabsContent>
+          <TabsContent value="lottery">
+            {renderTabContent("lottery", <LotteryTab />)}
+          </TabsContent>
 
-              <TabsContent value="live">
-                {renderTabContent("live", <LiveDrawTab />)}
-              </TabsContent>
+          <TabsContent value="live">
+            {renderTabContent("live", <LiveDrawTab />)}
+          </TabsContent>
 
-              <TabsContent value="admin">
-                <AdminDashboard />
-              </TabsContent>
-            </>
-          )}
+          <TabsContent value="admin">
+            <AdminDashboard />
+          </TabsContent>
         </Tabs>
       </main>
 
