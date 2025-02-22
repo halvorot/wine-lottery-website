@@ -23,6 +23,10 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
     }
   };
 
+  const formattedDrawDate = drawDate
+    ? new Date(drawDate).toLocaleString('no-NB', { dateStyle: 'long' })
+    : 'Pick a date';
+
   return (
     <div className="grid gap-2">
       <Label htmlFor="drawDate">Draw Date</Label>
@@ -41,7 +45,7 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
             onClick={() => setCalendarOpen(true)}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {drawDate ? format(drawDate, "PPP") : "Pick a date"}
+            {formattedDrawDate}
           </Button>
         </PopoverTrigger>
         <PopoverContent 
