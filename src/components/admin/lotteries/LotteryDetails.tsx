@@ -12,7 +12,7 @@ interface Prize {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  price: number | null;
   created_at: string;
 }
 
@@ -116,8 +116,18 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
   const prizeColumns = [
     { key: "name", label: "Name", sortable: true },
     { key: "description", label: "Description" },
-    { key: "quantity", label: "Quantity", sortable: true },
-    { key: "remaining_quantity", label: "Remaining" },
+    { 
+      key: "price", 
+      label: "Price", 
+      sortable: true,
+      render: (prize: Prize) => prize.price ? `${prize.price} kr` : "-"
+    },
+    {
+      key: "created_at",
+      label: "Added",
+      sortable: true,
+      render: (prize: Prize) => format(new Date(prize.created_at), "PPP")
+    }
   ];
 
   const entryColumns = [
