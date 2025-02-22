@@ -7,6 +7,7 @@ import { useState } from "react";
 import { CreateLotteryDialog } from "./CreateLotteryDialog";
 import { DeleteLotteryDialog } from "./DeleteLotteryDialog";
 import { LotteryItem } from "./LotteryItem";
+import { useActiveLottery } from "@/hooks/useActiveLottery";
 
 interface Lottery {
   id: string;
@@ -21,6 +22,7 @@ interface Lottery {
 
 export function LotteriesSection() {
   const [deletingLotteryId, setDeletingLotteryId] = useState<string | null>(null);
+  const { data: activeLottery } = useActiveLottery();
 
   const { data: lotteries, isLoading } = useQuery({
     queryKey: ["lotteries"],
@@ -69,6 +71,7 @@ export function LotteriesSection() {
               key={lottery.id}
               lottery={lottery}
               onDelete={setDeletingLotteryId}
+              isActive={activeLottery?.id === lottery.id}
             />
           ))}
         </Accordion>
