@@ -26,5 +26,7 @@ export function useActiveLottery() {
       
       return data;
     },
+    staleTime: 30000, // Cache valid for 30 seconds
+    retry: false, // Don't retry on failure since no data is an expected state
   });
 }
