@@ -3,10 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
+type LotteryWithStatus = {
+  id: number;
+  draw_date: string;
+  is_completed: boolean;
+  lottery_status: {
+    is_locked: boolean;
+  } | null;
+} | null;
+
 export function useActiveLottery() {
-  return useQuery({
+  return useQuery<LotteryWithStatus, Error>({
     queryKey: ["active-lottery"],
-    queryFn: async () => {
+    queryFn: async (): Promise<LotteryWithStatus> => {
       const { data, error } = await supabase
         .from('lotteries')
         .select(`
@@ -35,7 +44,7 @@ export function useActiveLottery() {
     },
     retry: 1,
     retryDelay: 1000,
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    cacheTime: 60000, // Keep data in cache for 1 minute
+    staleTime: 30000,
+    cacheTime: 60000,
   });
 }
