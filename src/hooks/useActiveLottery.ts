@@ -2,18 +2,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import type { Database } from "@/integrations/supabase/types";
 
-type LotteryWithStatus = {
-  id: number;
-  draw_date: string;
-  is_completed: boolean;
-  lottery_status: {
-    is_locked: boolean;
-  } | null;
+type LotteryWithStatus = Database['public']['Tables']['lotteries']['Row'] & {
+  lottery_status: Pick<Database['public']['Tables']['lottery_status']['Row'], 'is_locked'> | null;
 } | null;
 
 export function useActiveLottery() {
-  return useQuery<LotteryWithStatus>({
+  return useQuery({
     queryKey: ["active-lottery"],
     queryFn: async () => {
       const { data, error } = await supabase
