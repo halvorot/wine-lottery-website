@@ -31,7 +31,7 @@ export function LotteryItem({ lottery, onDelete, isActive }: LotteryItemProps) {
   const isPast = drawDateTime < new Date();
   
   const formattedDateTime = lottery.draw_date && lottery.draw_time
-    ? new Date(`${lottery.draw_date}T${lottery.draw_time}`).toLocaleString('no-NB', {
+    ? drawDateTime.toLocaleString('no-NB', {
         dateStyle: 'long',
         timeStyle: 'short',
         hour12: false
@@ -73,13 +73,13 @@ export function LotteryItem({ lottery, onDelete, isActive }: LotteryItemProps) {
                 </span>
                 <span className={cn(
                   "text-sm px-3 py-1 rounded-full font-medium",
-                  isPast
-                    ? "bg-gray-100 text-gray-700"
-                    : isActive
+                  isActive
                     ? "bg-green-100 text-green-700"
+                    : isPast
+                    ? "bg-gray-100 text-gray-700"
                     : "bg-blue-100 text-blue-700"
                 )}>
-                  {isPast ? "Past" : isActive ? "Active" : "Upcoming"}
+                  {isActive ? "Active" : isPast ? "Past" : "Upcoming"}
                 </span>
               </div>
             </div>
