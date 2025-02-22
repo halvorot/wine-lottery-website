@@ -13,9 +13,9 @@ type LotteryWithStatus = {
 } | null;
 
 export function useActiveLottery() {
-  return useQuery<LotteryWithStatus, Error>({
+  return useQuery<LotteryWithStatus>({
     queryKey: ["active-lottery"],
-    queryFn: async (): Promise<LotteryWithStatus> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('lotteries')
         .select(`
