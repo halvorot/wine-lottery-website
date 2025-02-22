@@ -1,69 +1,25 @@
-# Welcome to your Lovable project
+# Wine lottery website
+
+**Live site:** https://wine-lottery-showcase.lovable.app/
+
+This is a website for hosting wine lotteries, where users can make entries and follow a live draw of the lottery. It also has an admin dashboard for managing the lotteries protected by authentication either with email/password or Google authentication.
+
+## What was the purpose for building this project?
+
+The main purpose for building this project was to explore the space of AI development and to get experience with that way of working. Here using Lovable.dev.
+
+I also wanted to get a wine lottery going at work or with friends and this was a fun way to do it.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/6a955c22-9cfb-46b0-9399-7e04a6206150
+The project is built using the AI web development platform [Lovable.dev](https://lovable.dev).
 
-## How can I edit this code?
+### What technologies are used for this project?
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/6a955c22-9cfb-46b0-9399-7e04a6206150) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
+This project is built with
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6a955c22-9cfb-46b0-9399-7e04a6206150) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
