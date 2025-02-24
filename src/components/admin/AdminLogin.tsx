@@ -67,9 +67,7 @@ export const AdminLogin = () => {
   };
 
   const handleBackToHome = () => {
-    // Instead of using clearSession (which doesn't exist), 
-    // we'll use signOut to clear any existing session
-    supabase.auth.signOut();
+    // Navigate to the home page
     navigate("/");
   };
 
