@@ -67,10 +67,19 @@ export const AdminLogin = () => {
   };
 
   const handleBackToHome = async () => {
-    // First sign out from Supabase
-    await supabase.auth.signOut();
-    // Then navigate to root and let Index.tsx handle showing the lottery tab
-    navigate("/");
+    try {
+      // First sign out from Supabase
+      await supabase.auth.signOut();
+      // Force a reload to ensure all auth state is cleared and we start fresh
+      window.location.href = '/?tab=lottery';
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while signing out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
