@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const AdminLogin = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,22 +59,6 @@ export const AdminLogin = () => {
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleBackToHome = async () => {
-    try {
-      // First sign out from Supabase
-      await supabase.auth.signOut();
-      // Force a reload to ensure all auth state is cleared and we start fresh
-      window.location.href = '/?tab=lottery';
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error",
-        description: "An error occurred while signing out. Please try again.",
         variant: "destructive",
       });
     }
@@ -142,14 +124,6 @@ export const AdminLogin = () => {
             />
           </svg>
           Login with Google
-        </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          className="w-full"
-          onClick={handleBackToHome}
-        >
-          Back to Home
         </Button>
       </form>
     </div>
