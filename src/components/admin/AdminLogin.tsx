@@ -66,9 +66,11 @@ export const AdminLogin = () => {
     }
   };
 
-  const handleBackToHome = () => {
-    // Navigate to the home page
-    navigate("/");
+  const handleBackToHome = async () => {
+    // First sign out from Supabase
+    await supabase.auth.signOut();
+    // Then navigate to root with lottery tab selected
+    navigate("/?tab=lottery");
   };
 
   return (
