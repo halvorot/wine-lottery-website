@@ -69,8 +69,8 @@ export const AdminLogin = () => {
   const handleBackToHome = async () => {
     // First sign out from Supabase
     await supabase.auth.signOut();
-    // Then navigate to root with lottery tab selected
-    navigate("/?tab=lottery");
+    // Then navigate to root and let Index.tsx handle showing the lottery tab
+    navigate("/");
   };
 
   return (
