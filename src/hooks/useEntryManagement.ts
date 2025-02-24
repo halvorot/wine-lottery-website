@@ -61,13 +61,6 @@ export function useEntryManagement() {
         throw new Error("No active lottery found");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) {
-        throw new Error("No authenticated user found");
-      }
-
       // Validate new entries
       if (!existingEntry && entry.num_tickets === 0) {
         throw new Error("Number of tickets must be greater than 0 for new entries");
@@ -113,7 +106,6 @@ export function useEntryManagement() {
             name: entry.name,
             email: entry.email,
             num_tickets: entry.num_tickets,
-            created_by: userId,
             lottery_id: activeLottery.id,
           }]);
 
