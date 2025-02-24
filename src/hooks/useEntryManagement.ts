@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +19,7 @@ export function useEntryManagement() {
       .select("*")
       .eq("lottery_id", activeLottery.id)
       .eq("email", email)
+      .eq('status', 'paid')
       .maybeSingle();
 
     if (error) {
@@ -61,13 +61,6 @@ export function useEntryManagement() {
         throw new Error("No active lottery found");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) {
-        throw new Error("No authenticated user found");
-      }
-
       // Validate new entries
       if (!existingEntry && entry.num_tickets === 0) {
         throw new Error("Number of tickets must be greater than 0 for new entries");
@@ -86,6 +79,7 @@ export function useEntryManagement() {
 
           if (error) throw error;
           setExistingEntry(null);
+          return { type: 'delete' };
         } else {
           // Update existing entry
           const { error } = await supabase
@@ -104,36 +98,67 @@ export function useEntryManagement() {
             name: entry.name,
             num_tickets: entry.num_tickets,
           });
+          return { type: 'update', entry: existingEntryCheck };
         }
       } else {
-        // Insert new entry
-        const { error } = await supabase
+        // Insert new entry with pending status
+        const { data: newEntry, error } = await supabase
           .from("lottery_entries")
           .insert([{
             name: entry.name,
             email: entry.email,
             num_tickets: entry.num_tickets,
-            created_by: userId,
             lottery_id: activeLottery.id,
-          }]);
+            status: 'pending'
+          }])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Create checkout session
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              entryId: newEntry.id,
+              amount: entry.num_tickets * 100, // $1 per ticket
+              currency: 'usd',
+              email: entry.email, // Pass email for Stripe customer info
+              name: entry.name // Pass name for Stripe customer info
+            }),
+          }
+        );
+
+        const { url, error: stripeError } = await response.json();
+        if (stripeError) throw new Error(stripeError);
+        if (!url) throw new Error('No checkout URL received');
+
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+        return { type: 'create', entry: newEntry };
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["today-entries"] });
       queryClient.invalidateQueries({ queryKey: ["recent-entries"] });
-      if (existingEntry && variables.num_tickets === 0) {
+      
+      if (result.type === 'delete') {
         toast({
           title: "Entry Deleted",
           description: `${variables.name}'s entry has been deleted.`,
         });
-      } else {
+      } else if (result.type === 'update') {
         toast({
-          title: existingEntry ? "Entry Updated!" : "Entry Submitted!",
-          description: `${variables.name} is now entered in today's lottery with ${variables.num_tickets} ticket${variables.num_tickets !== 1 ? 's' : ''}. Good luck! 🍷`,
+          title: "Entry Updated!",
+          description: `${variables.name}'s entry has been updated to ${variables.num_tickets} ticket${variables.num_tickets !== 1 ? 's' : ''}.`,
         });
       }
+      // Don't show success toast for new entries since we're redirecting to Stripe
     },
     onError: (error: Error) => {
       if (error.message === "Number of tickets must be greater than 0 for new entries") {
