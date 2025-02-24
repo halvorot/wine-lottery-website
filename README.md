@@ -1,6 +1,6 @@
 # Wine lottery website
 
-**Live site:** https://wine-lottery-showcase.lovable.app/
+**Live site:** [vinlotteri.halvorteigen.no](https://vinlotteri.halvorteigen.no)
 
 This is a website for hosting wine lotteries, where users can make entries and follow a live draw of the lottery. It also has an admin dashboard for managing the lotteries protected by authentication either with email/password or Google authentication.
 
