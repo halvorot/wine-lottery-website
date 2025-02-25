@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,13 +10,15 @@ import { PasswordVerificationProvider } from "./contexts/PasswordVerificationCon
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Ensures proper cache invalidation across browsers
+      // Always refetch on mount to ensure fresh data
+      refetchOnMount: 'always',
       refetchOnWindowFocus: true,
-      refetchOnMount: true,
       refetchOnReconnect: true,
-      // Shorter stale time to prevent stale data issues
-      staleTime: 1000 * 30,
-      // Retry failed requests a limited number of times
+      // Keep stale data for 30 seconds
+      staleTime: 30000,
+      // Remove from cache after 5 minutes
+      gcTime: 5 * 60 * 1000,
+      // Retry failed requests with reasonable limits
       retry: 2,
       retryDelay: 1000,
     },
