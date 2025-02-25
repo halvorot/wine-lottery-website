@@ -7,13 +7,36 @@ import { PasswordVerificationModal } from "@/components/PasswordVerificationModa
 import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const { isVerified, setVerified } = usePasswordVerification();
-  const { data: activeLottery, isLoading: isLoadingLottery } = useActiveLottery();
+  const { data: activeLottery, isLoading: isLoadingLottery, error: lotteryError } = useActiveLottery();
   const { isAdmin } = useAuthStatus();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const { toast } = useToast();
+
+  // Handle tab from URL params
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (!tab) {
+      setSearchParams({ tab: "lottery" });
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Handle errors
+  useEffect(() => {
+    if (lotteryError) {
+      toast({
+        title: "Error",
+        description: "Failed to load lottery data. Please refresh the page.",
+        variant: "destructive",
+      });
+    }
+  }, [lotteryError, toast]);
 
   const handleVerified = () => {
     setVerified(true);
@@ -25,13 +48,8 @@ const Index = () => {
   };
 
   const shouldShowPasswordVerification = useCallback((tab: string) => {
-    // Don't show password verification for admin tab or if user is admin
     if (tab === "admin" || isAdmin) return false;
-    
-    // Don't show password verification if there's no active lottery
     if (!activeLottery) return false;
-    
-    // Show password verification for lottery and live tabs if not verified
     return !isVerified && (tab === "lottery" || tab === "live");
   }, [isVerified, activeLottery, isAdmin]);
 
@@ -52,17 +70,22 @@ const Index = () => {
     return content;
   };
 
+  const currentTab = searchParams.get("tab") || "lottery";
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
-        <Tabs defaultValue="lottery" className="w-full max-w-4xl">
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full max-w-4xl">
           <TabsList className="grid w-full grid-cols-3 max-w-[400px] mx-auto mb-8">
             <TabsTrigger value="lottery">Lottery</TabsTrigger>
             <TabsTrigger value="live">Live Draw</TabsTrigger>
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
 
-          {/* Show loading state while checking for active lottery */}
           {isLoadingLottery ? (
             <div className="text-center p-8">
               <div className="animate-spin h-8 w-8 border-4 border-wine border-t-transparent rounded-full mx-auto mb-4"></div>
