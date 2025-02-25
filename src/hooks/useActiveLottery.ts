@@ -9,32 +9,25 @@ export function useActiveLottery() {
   return useQuery({
     queryKey: ["active-lottery"],
     queryFn: async () => {
-      try {
-        // First check if supabase is initialized properly
-        if (!supabase) {
-          throw new Error("Supabase client not initialized");
-        }
+      if (!supabase) {
+        throw new Error("Supabase client not initialized");
+      }
 
-        const { data, error } = await supabase
-          .from('lotteries')
-          .select(`
-            *,
-            lottery_status (
-              is_locked
-            )
-          `)
-          .eq('is_completed', false)
-          .gte('draw_date', new Date().toISOString().split('T')[0])
-          .order('draw_date', { ascending: true })
-          .limit(1)
-          .maybeSingle();
+      const { data, error } = await supabase
+        .from('lotteries')
+        .select(`
+          *,
+          lottery_status (
+            is_locked
+          )
+        `)
+        .eq('is_completed', false)
+        .gte('draw_date', new Date().toISOString().split('T')[0])
+        .order('draw_date', { ascending: true })
+        .limit(1)
+        .maybeSingle();
 
-        if (error) {
-          throw error;
-        }
-        
-        return data;
-      } catch (error) {
+      if (error) {
         console.error("Error fetching active lottery:", error);
         toast({
           title: "Error",
@@ -43,12 +36,16 @@ export function useActiveLottery() {
         });
         throw error;
       }
+      
+      return data;
     },
     staleTime: 30000, // Cache valid for 30 seconds
-    retry: 3, // Retry 3 times on failure
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    refetchOnMount: true, // Always refetch on mount
-    refetchOnReconnect: true, // Refetch when network reconnects
+    retry: 2, // Reduce retries to avoid long loading states
+    retryDelay: 1000, // Fixed 1s delay between retries
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    // Properly type the initialData to avoid stale states
+    initialData: undefined
   });
 }

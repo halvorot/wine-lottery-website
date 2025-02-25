@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LotteryTab } from "@/components/LotteryTab";
 import { LiveDrawTab } from "@/components/LiveDrawTab";
@@ -12,14 +11,13 @@ import { useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const { isVerified, setVerified } = usePasswordVerification();
-  const { data: activeLottery, isLoading: isLoadingLottery, error: lotteryError } = useActiveLottery();
-  const { isAdmin } = useAuthStatus();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { toast } = useToast();
+  const { isVerified, setVerified } = usePasswordVerification();
+  const { isAdmin } = useAuthStatus();
+  const { data: activeLottery, isLoading: isLoadingLottery, error: lotteryError, status } = useActiveLottery();
 
-  // Handle tab from URL params
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (!tab) {
@@ -27,7 +25,6 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Handle errors
   useEffect(() => {
     if (lotteryError) {
       toast({
@@ -76,6 +73,8 @@ const Index = () => {
     setSearchParams({ tab: value });
   };
 
+  const showLoading = isLoadingLottery && status === 'pending';
+
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -86,7 +85,7 @@ const Index = () => {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
 
-          {isLoadingLottery ? (
+          {showLoading ? (
             <div className="text-center p-8">
               <div className="animate-spin h-8 w-8 border-4 border-wine border-t-transparent rounded-full mx-auto mb-4"></div>
               <p>Loading...</p>
