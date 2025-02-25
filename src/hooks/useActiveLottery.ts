@@ -3,6 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
+const isSafari = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.includes('safari') && !ua.includes('chrome');
+};
+
 export function useActiveLottery() {
   const { toast } = useToast();
 
@@ -39,13 +44,16 @@ export function useActiveLottery() {
       
       return data;
     },
-    staleTime: 30000, // Cache valid for 30 seconds
-    retry: 2, // Reduce retries to avoid long loading states
-    retryDelay: 1000, // Fixed 1s delay between retries
+    staleTime: isSafari() ? 0 : 30000, // Disable cache in Safari
+    cacheTime: isSafari() ? 1000 : 5 * 60 * 1000, // Short cache time in Safari
+    retry: 2,
+    retryDelay: 1000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
-    // Properly type the initialData to avoid stale states
+    // Force refetch on mount in Safari
+    refetchOnMount: isSafari() ? 'always' : true,
+    gcTime: isSafari() ? 1000 : 5 * 60 * 1000, // Shorter garbage collection time in Safari
     initialData: undefined
   });
 }

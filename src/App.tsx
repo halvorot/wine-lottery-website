@@ -8,7 +8,21 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { PasswordVerificationProvider } from "./contexts/PasswordVerificationContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Ensures proper cache invalidation across browsers
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      // Shorter stale time to prevent stale data issues
+      staleTime: 1000 * 30,
+      // Retry failed requests a limited number of times
+      retry: 2,
+      retryDelay: 1000,
+    },
+  },
+});
 
 const App = () => (
   <BrowserRouter>
