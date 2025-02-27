@@ -49,7 +49,7 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0 bg-white z-[100] shadow-lg border rounded-md pointer-events-auto select-none" 
+          className="w-auto p-0 bg-white z-100 shadow-lg border rounded-md pointer-events-auto select-none" 
           align="start"
           side="bottom"
           onClick={(e) => e.stopPropagation()}
@@ -63,7 +63,7 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
               return isBefore(date, today);
             }}
             initialFocus
-            className="rounded-md border [&_.rdp-day]:cursor-pointer [&_.rdp-day:not([disabled])]:hover:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
+            className="rounded-md border [&_.rdp-day]:cursor-pointer hover:[&_.rdp-day:not([disabled])]:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
           />
         </PopoverContent>
       </Popover>
