@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export function useActiveLottery() {
   const { toast } = useToast();
+  console.log("useActiveLottery called");
 
   return useQuery({
     queryKey: ["active-lottery"],

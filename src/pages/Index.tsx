@@ -16,7 +16,7 @@ const Index = () => {
   const { toast } = useToast();
   const { isVerified, setVerified } = usePasswordVerification();
   const { isAdmin } = useAuthStatus();
-  const { data: activeLottery, isLoading: isLoadingLottery, error: lotteryError, status } = useActiveLottery();
+  const { data: activeLottery, isLoading: isLoadingLottery, error: lotteryError } = useActiveLottery();
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -73,8 +73,6 @@ const Index = () => {
     setSearchParams({ tab: value });
   };
 
-  const showLoading = isLoadingLottery && status === 'pending';
-
   return (
     <div className="min-h-screen bg-white text-charcoal">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -85,7 +83,7 @@ const Index = () => {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
 
-          {showLoading ? (
+          {isLoadingLottery ? (
             <div className="text-center p-8">
               <div className="animate-spin h-8 w-8 border-4 border-wine border-t-transparent rounded-full mx-auto mb-4"></div>
               <p>Loading...</p>
