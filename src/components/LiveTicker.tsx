@@ -31,7 +31,7 @@ export const LiveTicker = () => {
   }
 
   return (
-    <div className="overflow-hidden whitespace-nowrap w-full bg-cream/50 backdrop-blur-sm rounded-lg p-4">
+    <div className="overflow-hidden whitespace-nowrap w-full bg-cream/50 backdrop-blur-xs rounded-lg p-4">
       <div className="animate-ticker inline-block">
         {entries.map((entry, i) => (
           <span key={entry.id} className="inline-block mx-8">

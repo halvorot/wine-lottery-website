@@ -57,7 +57,7 @@ const Index = () => {
           <p className="mb-4">Please verify the lottery password to view this content.</p>
           <button 
             onClick={() => setShowPasswordModal(true)}
-            className="px-4 py-2 bg-wine text-white rounded hover:bg-wine/90 transition-colors"
+            className="px-4 py-2 bg-wine text-white rounded-sm hover:bg-wine/90 transition-colors"
           >
             Enter Password
           </button>
