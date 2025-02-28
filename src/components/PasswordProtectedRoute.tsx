@@ -20,14 +20,6 @@ export function PasswordProtectedRoute({ children }: PasswordProtectedRouteProps
 
   // Track verification state changes to show success toast only when newly verified
   useEffect(() => {
-    // If verification state changes from false to true, show success toast
-    // Only show this for non-admin users who have just been verified
-    if (!previousVerificationState && isVerified && activeLottery && !isAdmin) {
-      toast({
-        title: "Access Granted",
-        description: `You now have access to the active lottery!`,
-      });
-    }
     
     // Update previous verification state
     setPreviousVerificationState(isVerified);
