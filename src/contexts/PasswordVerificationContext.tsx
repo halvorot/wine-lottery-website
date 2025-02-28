@@ -1,18 +1,21 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PasswordVerificationContextType {
   isVerified: boolean;
   checkVerification: () => Promise<void>;
   setVerified: (value: boolean) => void;
+  isCheckingVerification: boolean;
 }
 
 const PasswordVerificationContext = createContext<PasswordVerificationContextType>({
   isVerified: false,
   checkVerification: async () => {},
   setVerified: () => {},
+  isCheckingVerification: false,
 });
 
 export function PasswordVerificationProvider({
@@ -21,10 +24,21 @@ export function PasswordVerificationProvider({
   children: React.ReactNode;
 }) {
   const [isVerified, setIsVerified] = useState(false);
+  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
   const { data: activeLottery } = useActiveLottery();
+  const { isAdmin } = useAuthStatus();
+  const { toast } = useToast();
 
   const checkVerification = async () => {
     try {
+      setIsCheckingVerification(true);
+      
+      // If user is admin, they're automatically verified
+      if (isAdmin) {
+        setIsVerified(true);
+        return;
+      }
+
       // Check URL parameters for logout state
       const params = new URLSearchParams(window.location.search);
       const fromLogout = params.get('fromLogout') === 'true';
@@ -34,8 +48,9 @@ export function PasswordVerificationProvider({
         return;
       }
 
+      // If there's no active lottery, no verification needed
       if (!activeLottery) {
-        setIsVerified(false);
+        setIsVerified(true);
         return;
       }
 
@@ -55,16 +70,31 @@ export function PasswordVerificationProvider({
     } catch (error) {
       console.error("Error checking verification:", error);
       setIsVerified(false);
+      
+      // Only show toast for critical errors that prevent the app from functioning
+      toast({
+        title: "Verification Error",
+        description: "Failed to check verification status. Please refresh the page.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingVerification(false);
     }
   };
 
+  // Check verification when active lottery or admin status changes
   useEffect(() => {
     checkVerification();
-  }, [activeLottery?.id]);
+  }, [activeLottery?.id, isAdmin]);
 
   return (
     <PasswordVerificationContext.Provider
-      value={{ isVerified, checkVerification, setVerified: setIsVerified }}
+      value={{ 
+        isVerified, 
+        checkVerification, 
+        setVerified: setIsVerified,
+        isCheckingVerification
+      }}
     >
       {children}
     </PasswordVerificationContext.Provider>

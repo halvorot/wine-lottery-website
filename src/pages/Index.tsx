@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LotteryTab } from "@/components/LotteryTab";
 import { LiveDrawTab } from "@/components/LiveDrawTab";
@@ -7,10 +6,11 @@ import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { Spinner } from "@/components/ui/spinner";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useEffect, useState } from "react";
+import { PasswordProtectedRoute } from "@/components/PasswordProtectedRoute";
 
 const Index = () => {
   const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
-  const { isLoading: isLotteryLoading } = useActiveLottery();
+  const { data: activeLottery, isLoading: isLotteryLoading } = useActiveLottery();
   const [tab, setTab] = useState<string>("lottery");
 
   // Auto-select admin tab if user is admin
@@ -37,12 +37,22 @@ const Index = () => {
           <TabsTrigger value="live-draw">Live Draw</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
+        
+        {/* Lottery Tab Content */}
         <TabsContent value="lottery">
-          <LotteryTab />
+          <PasswordProtectedRoute>
+            <LotteryTab />
+          </PasswordProtectedRoute>
         </TabsContent>
+        
+        {/* Live Draw Tab Content */}
         <TabsContent value="live-draw">
-          <LiveDrawTab />
+          <PasswordProtectedRoute>
+            <LiveDrawTab />
+          </PasswordProtectedRoute>
         </TabsContent>
+        
+        {/* Admin Tab Content - No password protection */}
         <TabsContent value="admin">
           <AdminDashboard />
         </TabsContent>
