@@ -32,7 +32,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-cream/25 p-8">
       <Tabs defaultValue={tab} value={tab} onValueChange={setTab} className="max-w-5xl mx-auto">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 mb-8">
           <TabsTrigger value="lottery">Lottery</TabsTrigger>
           <TabsTrigger value="live-draw">Live Draw</TabsTrigger>
           {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
