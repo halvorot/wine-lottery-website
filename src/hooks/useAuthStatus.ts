@@ -5,17 +5,24 @@ import { supabase } from "@/integrations/supabase/client";
 export function useAuthStatus() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
 
-      if (session) {
-        const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
-        if (!error) {
-          setIsAdmin(adminStatus);
+        if (session) {
+          const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
+          if (!error) {
+            setIsAdmin(adminStatus);
+          }
         }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -32,9 +39,13 @@ export function useAuthStatus() {
       setIsAuthenticated(!!session);
       
       if (session) {
-        const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
-        if (!error) {
-          setIsAdmin(adminStatus);
+        try {
+          const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
+          if (!error) {
+            setIsAdmin(adminStatus);
+          }
+        } catch (error) {
+          console.error("Error checking admin status:", error);
         }
       } else {
         setIsAdmin(false);
@@ -44,5 +55,5 @@ export function useAuthStatus() {
     return () => subscription.unsubscribe();
   }, []);
 
-  return { isAuthenticated, isAdmin };
+  return { isAuthenticated, isAdmin, isLoading };
 }

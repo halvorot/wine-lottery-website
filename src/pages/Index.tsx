@@ -9,7 +9,7 @@ import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useEffect, useState } from "react";
 
 const Index = () => {
-  const { isAdmin, isLoading: isAuthLoading } = useAuthStatus();
+  const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
   const { isLoading: isLotteryLoading } = useActiveLottery();
   const [tab, setTab] = useState<string>("lottery");
 
