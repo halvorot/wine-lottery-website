@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useEffect, useState } from "react";
 import { PasswordProtectedRoute } from "@/components/PasswordProtectedRoute";
+import { Wine, Ticket, ShieldCheck } from "lucide-react";
 
 const Index = () => {
   const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
@@ -32,11 +33,31 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-cream/25 p-8">
       <Tabs defaultValue={tab} value={tab} onValueChange={setTab} className="max-w-5xl mx-auto">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
-          <TabsTrigger value="lottery">Lottery</TabsTrigger>
-          <TabsTrigger value="live-draw">Live Draw</TabsTrigger>
-          <TabsTrigger value="admin">Admin</TabsTrigger>
-        </TabsList>
+        <div className="border-b border-gray-200 mb-8">
+          <TabsList className="w-full flex justify-center space-x-2 sm:space-x-8 bg-transparent">
+            <TabsTrigger 
+              value="lottery" 
+              className="flex items-center gap-2 px-4 py-3 text-charcoal/80 hover:text-wine data-[state=active]:text-wine data-[state=active]:border-b-2 data-[state=active]:border-wine -mb-px transition-all duration-200 font-medium"
+            >
+              <Wine size={18} className="flex-shrink-0" />
+              <span>Lottery</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="live-draw" 
+              className="flex items-center gap-2 px-4 py-3 text-charcoal/80 hover:text-wine data-[state=active]:text-wine data-[state=active]:border-b-2 data-[state=active]:border-wine -mb-px transition-all duration-200 font-medium"
+            >
+              <Ticket size={18} className="flex-shrink-0" />
+              <span>Live Draw</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="admin" 
+              className="flex items-center gap-2 px-4 py-3 text-charcoal/80 hover:text-wine data-[state=active]:text-wine data-[state=active]:border-b-2 data-[state=active]:border-wine -mb-px transition-all duration-200 font-medium"
+            >
+              <ShieldCheck size={18} className="flex-shrink-0" />
+              <span>Admin</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
         {/* Lottery Tab Content */}
         <TabsContent value="lottery">
