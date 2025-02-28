@@ -12,6 +12,7 @@ const Index = () => {
   const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
   const { isLoading: isLotteryLoading } = useActiveLottery();
   const [tab, setTab] = useState<string>("lottery");
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // Auto-select admin tab if user is admin
   useEffect(() => {
@@ -20,11 +21,21 @@ const Index = () => {
     }
   }, [isAdmin, isAuthLoading]);
 
-  if (isAuthLoading) {
+  // Set a timeout to prevent infinite loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // If loading takes too long, proceed anyway
+  if (isAuthLoading && !loadingTimeout) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-8">
         <Spinner size="lg" />
-        <p className="mt-4 text-wine">Loading...</p>
+        <p className="mt-4 text-wine">Loading authentication...</p>
       </div>
     );
   }
