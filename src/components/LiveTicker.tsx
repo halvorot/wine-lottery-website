@@ -31,16 +31,10 @@ export const LiveTicker = () => {
   }
 
   return (
-    <div className="overflow-hidden whitespace-nowrap w-full bg-cream/50 backdrop-blur-xs rounded-lg p-4">
+    <div className="overflow-hidden whitespace-nowrap w-full bg-cream/50 backdrop-blur-xs rounded-lg p-4 inset-shadow-xs">
       <div className="animate-ticker inline-block">
-        {entries.map((entry, i) => (
-          <span key={entry.id} className="inline-block mx-8">
-            {entry.name} entered with {entry.num_tickets} ticket{entry.num_tickets !== 1 ? 's' : ''}
-          </span>
-        ))}
-        {/* Duplicate entries to create seamless loop */}
-        {entries.map((entry, i) => (
-          <span key={`${entry.id}-duplicate`} className="inline-block mx-8">
+        {entries.concat(entries).map((entry) => (
+          <span key={entry.id} className="inline-block mx-8 capitalize">
             {entry.name} entered with {entry.num_tickets} ticket{entry.num_tickets !== 1 ? 's' : ''}
           </span>
         ))}
