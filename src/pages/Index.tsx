@@ -8,11 +8,14 @@ import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useEffect, useState } from "react";
 import { PasswordProtectedRoute } from "@/components/PasswordProtectedRoute";
 import { Wine, Ticket, ShieldCheck } from "lucide-react";
+import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
 
 const Index = () => {
   const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
   const { data: activeLottery, isLoading: isLotteryLoading } = useActiveLottery();
+  const { checkVerification } = usePasswordVerification();
   const [tab, setTab] = useState<string>("lottery");
+  const [previousTab, setPreviousTab] = useState<string>("lottery");
 
   // Auto-select admin tab if user is admin
   useEffect(() => {
@@ -20,6 +23,17 @@ const Index = () => {
       setTab("admin");
     }
   }, [isAdmin, isAuthLoading]);
+
+  // Handle tab changes
+  const handleTabChange = (value: string) => {
+    setPreviousTab(tab);
+    setTab(value);
+    
+    // If changing from admin tab to a protected tab, force verification check
+    if (previousTab === "admin" && (value === "lottery" || value === "live-draw")) {
+      checkVerification();
+    }
+  };
 
   if (isAuthLoading) {
     return (
@@ -32,7 +46,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-cream/25 p-8">
-      <Tabs defaultValue={tab} value={tab} onValueChange={setTab} className="max-w-5xl mx-auto">
+      <Tabs defaultValue={tab} value={tab} onValueChange={handleTabChange} className="max-w-5xl mx-auto">
         <div className="border-b border-gray-200 mb-8">
           <TabsList className="w-full flex justify-center space-x-2 sm:space-x-8 bg-transparent">
             <TabsTrigger 

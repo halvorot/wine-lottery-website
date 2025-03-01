@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
       setSession(null);
+      
+      // Add a URL parameter to indicate logout
+      // This will be used by PasswordVerificationContext to reset verification state
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('fromLogout', 'true');
+      
+      // Use history.replaceState to avoid adding a new entry to the browser history
+      window.history.replaceState({}, '', currentUrl.toString());
+      
+      // Force a re-render of the current page to ensure all components update
+      window.location.href = currentUrl.toString();
     } catch (error) {
       console.error("Error signing out:", error);
     }

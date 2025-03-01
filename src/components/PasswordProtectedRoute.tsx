@@ -5,45 +5,88 @@ import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
 
 interface PasswordProtectedRouteProps {
   children: ReactNode;
 }
 
 export function PasswordProtectedRoute({ children }: PasswordProtectedRouteProps) {
-  const { isVerified, checkVerification, isCheckingVerification } = usePasswordVerification();
-  const { isAdmin } = useAuthStatus();
+  const { isVerified, checkVerification, isCheckingVerification, resetVerification } = usePasswordVerification();
+  const { isAdmin, isLoading: isAuthLoading } = useAuthStatus();
   const { data: activeLottery, isLoading: isLotteryLoading } = useActiveLottery();
   const [showModal, setShowModal] = useState(false);
   const { toast } = useToast();
   const [previousVerificationState, setPreviousVerificationState] = useState(false);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
+  const [previousAdminState, setPreviousAdminState] = useState(isAdmin);
+  
+  // Determine if we're in a loading state
+  const isLoading = isCheckingVerification || isAuthLoading || isLotteryLoading || !initialCheckComplete;
 
   // Track verification state changes to show success toast only when newly verified
   useEffect(() => {
-    
     // Update previous verification state
     setPreviousVerificationState(isVerified);
   }, [isVerified, activeLottery, isAdmin, toast]);
 
+  // Track admin state changes to detect logout
   useEffect(() => {
+    // If admin status changed from true to false (logout)
+    if (previousAdminState && !isAdmin) {
+      // Force verification reset on admin logout
+      resetVerification();
+      // Force a new verification check
+      checkVerification();
+    }
+    
+    setPreviousAdminState(isAdmin);
+  }, [isAdmin, previousAdminState, resetVerification, checkVerification]);
+
+  // Only update the modal visibility after the initial verification check is complete
+  useEffect(() => {
+    if (isCheckingVerification) {
+      return; // Don't update modal state while checking
+    }
+
+    // Mark initial check as complete
+    if (!initialCheckComplete) {
+      setInitialCheckComplete(true);
+    }
+
     // If user is admin, they don't need password verification
-    if (isAdmin) return;
+    if (isAdmin) {
+      setShowModal(false);
+      return;
+    }
     
     // If there's no active lottery, no need for verification
-    if (!activeLottery && !isLotteryLoading) return;
+    if (!activeLottery && !isLotteryLoading) {
+      setShowModal(false);
+      return;
+    }
     
-    // If not verified and there is an active lottery, show the modal
-    if (!isVerified && activeLottery && !isLotteryLoading && !isCheckingVerification) {
+    // Only show modal if we're sure verification is needed
+    if (!isVerified && activeLottery && !isLotteryLoading && initialCheckComplete) {
       setShowModal(true);
     } else {
       setShowModal(false);
     }
-  }, [isVerified, isAdmin, activeLottery, isLotteryLoading, isCheckingVerification]);
+  }, [isVerified, isAdmin, activeLottery, isLotteryLoading, isCheckingVerification, initialCheckComplete]);
 
   const handleVerified = async () => {
     await checkVerification();
     setShowModal(false);
   };
+
+  // Show loading state while any verification or auth check is in progress
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-4 min-h-[200px]">
+        <Spinner size="md" />
+      </div>
+    );
+  }
 
   // If user is admin, render children without verification
   if (isAdmin) {
