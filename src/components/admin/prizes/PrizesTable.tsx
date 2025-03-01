@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateNorwegian } from "@/lib/date-utils";
 import { useState } from "react";
 import { DataTable } from "../table/DataTable";
 import { DeletePrizeDialog } from "./DeletePrizeDialog";
@@ -68,13 +67,13 @@ export function PrizesTable({
       key: "draw_date", 
       label: "Draw Date", 
       sortable: true,
-      render: (prize: Prize) => format(new Date(prize.draw_date), "PPP")
+      render: (prize: Prize) => formatDateNorwegian(prize.draw_date, "PPP")
     },
     { 
       key: "created_at", 
       label: "Added", 
       sortable: true,
-      render: (prize: Prize) => format(new Date(prize.created_at), "PPP")
+      render: (prize: Prize) => formatDateNorwegian(prize.created_at, "PPP")
     },
   ];
 

@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateNorwegian, formatDateForApi } from "@/lib/date-utils";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -54,15 +54,15 @@ export const PrizesSection = ({
   const handleTodayClick = () => {
     const today = new Date();
     setDate(today);
-    onDateChange(format(today, "yyyy-MM-dd"));
+    onDateChange(formatDateForApi(today));
   };
 
   const handleDateSelect = (newDate: Date | undefined) => {
-    if (!newDate || (date && format(newDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))) {
+    if (!newDate) {
       return;
     }
     setDate(newDate);
-    onDateChange(format(newDate, "yyyy-MM-dd"));
+    onDateChange(formatDateForApi(newDate));
   };
 
   return (
@@ -81,22 +81,29 @@ export const PrizesSection = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal flex-1 sm:flex-none",
+                    "justify-start text-left font-normal flex-1 sm:flex-none min-w-[120px]",
                     !date && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
+                  {date ? formatDateNorwegian(date, "PP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={handleDateSelect}
-                  initialFocus
-                  className="bg-white"
-                />
+              <PopoverContent 
+                className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" 
+                align="center"
+                sideOffset={4}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <div className="p-2 min-w-[280px] max-w-[95vw]">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateSelect}
+                    initialFocus
+                    className="bg-white"
+                  />
+                </div>
               </PopoverContent>
             </Popover>
             <Button 

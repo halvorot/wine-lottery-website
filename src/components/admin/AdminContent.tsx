@@ -1,4 +1,3 @@
-
 import { AdminHeader } from "./AdminHeader";
 import { AdminStats } from "./AdminStats";
 import { PrizesSection } from "./PrizesSection";
@@ -61,7 +60,7 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
   } = useLotteryEntries();
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl p-8 shadow-lg space-y-12">
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg space-y-8 sm:space-y-12">
       <AdminHeader
         isLocked={lotteryStatus?.is_locked || false}
         isLoading={!lotteryStatus}
@@ -79,7 +78,7 @@ export const AdminContent = ({ onLogout }: AdminContentProps) => {
         prizesCount={totalPrizes || 0}
       />
 
-      <div className="space-y-16">
+      <div className="space-y-8 sm:space-y-16">
         <LotteriesSection />
 
         <PrizesSection

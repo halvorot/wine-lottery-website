@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -39,7 +38,7 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
             id="drawDate"
             variant="outline"
             className={cn(
-              "justify-start text-left font-normal",
+              "justify-start text-left font-normal w-full",
               !drawDate && "text-muted-foreground"
             )}
             onClick={() => setCalendarOpen(true)}
@@ -49,22 +48,26 @@ export function LotteryDatePicker({ drawDate, onDateChange }: LotteryDatePickerP
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0 bg-white z-100 shadow-lg border rounded-md pointer-events-auto select-none" 
-          align="start"
+          className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" 
+          align="center"
           side="bottom"
+          sideOffset={4}
           onClick={(e) => e.stopPropagation()}
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <Calendar
-            mode="single"
-            selected={drawDate}
-            onSelect={handleDateSelect}
-            disabled={(date) => {
-              const today = startOfDay(new Date());
-              return isBefore(date, today);
-            }}
-            initialFocus
-            className="rounded-md border [&_.rdp-day]:cursor-pointer hover:[&_.rdp-day:not([disabled])]:bg-gray-100 [&_.rdp-button]:pointer-events-auto [&_.rdp-button]:select-none [&_.rdp-button]:cursor-pointer"
-          />
+          <div className="p-2 min-w-[280px] max-w-[95vw]">
+            <Calendar
+              mode="single"
+              selected={drawDate}
+              onSelect={handleDateSelect}
+              disabled={(date) => {
+                const today = startOfDay(new Date());
+                return isBefore(date, today);
+              }}
+              initialFocus
+              className="bg-white"
+            />
+          </div>
         </PopoverContent>
       </Popover>
     </div>

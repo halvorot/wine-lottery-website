@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { CalendarCheck, Calendar, Zap, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,7 +47,7 @@ export function LotteryItem({ lottery, onDelete, isActive }: LotteryItemProps) {
       <div className="flex items-center justify-between">
         <AccordionTrigger className="flex-1 py-4 px-4 hover:no-underline">
           <div className="flex flex-col items-start gap-2 w-full">
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
               <div className="flex items-center gap-2">
                 {isActive ? (
                   <Zap className="h-5 w-5 text-green-600" />
@@ -62,7 +61,7 @@ export function LotteryItem({ lottery, onDelete, isActive }: LotteryItemProps) {
                 </p>
               </div>
               
-              <div className="flex items-center gap-2 ml-auto">
+              <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0 sm:ml-auto">
                 <span className={cn(
                   "text-sm px-3 py-1 rounded-full font-medium",
                   lottery.lottery_status?.is_locked 

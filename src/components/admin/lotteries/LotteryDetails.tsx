@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import { Table, Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../table/DataTable";
 import { useToggleLottery } from "@/hooks/useToggleLottery";
+import { formatDateNorwegian } from "@/lib/date-utils";
 
 interface Prize {
   id: string;
@@ -126,7 +126,7 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
       key: "created_at",
       label: "Added",
       sortable: true,
-      render: (prize: Prize) => format(new Date(prize.created_at), "PPP")
+      render: (prize: Prize) => formatDateNorwegian(prize.created_at, "PPP")
     }
   ];
 
@@ -138,7 +138,7 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
       key: "created_at",
       label: "Entry Time",
       sortable: true,
-      render: (entry: Entry) => format(new Date(entry.created_at), "PPP p")
+      render: (entry: Entry) => formatDateNorwegian(entry.created_at, "PPP p")
     },
   ];
 

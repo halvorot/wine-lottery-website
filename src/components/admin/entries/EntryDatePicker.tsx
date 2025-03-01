@@ -1,9 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { formatDateNorwegian } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 
 interface EntryDatePickerProps {
@@ -41,21 +40,28 @@ export const EntryDatePicker = ({
           <Button
             variant="outline"
             className={cn(
-              "justify-start text-left font-normal flex-1 sm:flex-none",
+              "justify-start text-left font-normal flex-1 sm:flex-none min-w-[120px]",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {selectedDate === "all" ? "All Draw Dates" : format(new Date(selectedDate), "PPP")}
+            {selectedDate === "all" ? "All Dates" : formatDateNorwegian(selectedDate, "PP")}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-white">
-          <Calendar
-            mode="single"
-            selected={selectedDate === "all" ? undefined : new Date(selectedDate)}
-            onSelect={handleDateSelect}
-            initialFocus
-            className="bg-white"
-          />
+        <PopoverContent 
+          className="w-auto p-0 bg-white z-50 shadow-lg border rounded-md" 
+          align="center"
+          sideOffset={4}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <div className="p-2 min-w-[280px] max-w-[95vw]">
+            <Calendar
+              mode="single"
+              selected={selectedDate === "all" ? undefined : new Date(selectedDate)}
+              onSelect={handleDateSelect}
+              initialFocus
+              className="bg-white"
+            />
+          </div>
         </PopoverContent>
       </Popover>
       <Button 
@@ -63,14 +69,14 @@ export const EntryDatePicker = ({
         onClick={handleTodayClick}
         className="flex-1 sm:flex-none"
       >
-        Today's Draw
+        Today
       </Button>
       <Button 
         variant="outline"
         onClick={handleShowAllDates}
         className="flex-1 sm:flex-none"
       >
-        All Draw Dates
+        All Dates
       </Button>
     </div>
   );

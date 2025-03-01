@@ -1,8 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { formatDateForApi } from "@/lib/date-utils";
 import { hashPassword } from "@/utils/crypto";
 
 interface CreateLotteryParams {
@@ -20,7 +19,7 @@ export function useLotteryCreation() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("User not authenticated");
 
-      const formattedDate = format(drawDate, 'yyyy-MM-dd');
+      const formattedDate = formatDateForApi(drawDate);
       const hashedPassword = await hashPassword(password);
 
       const { data: lotteryData, error: lotteryError } = await supabase

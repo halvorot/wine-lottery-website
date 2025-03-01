@@ -1,4 +1,3 @@
-
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { formatDateNorwegian } from "@/lib/date-utils";
 
 type PrizeFormData = {
   name: string;
@@ -144,7 +143,7 @@ export function AddPrizeForm() {
             <FormItem>
               <FormLabel>Prize Name</FormLabel>
               <FormControl>
-                <Input placeholder="2018 Château Margaux" {...field} />
+                <Input placeholder="2018 Château Margaux" {...field} className="w-full" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -161,6 +160,7 @@ export function AddPrizeForm() {
                 <Textarea
                   placeholder="Enter prize description..."
                   {...field}
+                  className="w-full"
                 />
               </FormControl>
               <FormMessage />
@@ -181,7 +181,7 @@ export function AddPrizeForm() {
                   step="0.01"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
-
+                  className="w-full"
                 />
               </FormControl>
               <FormMessage />
@@ -195,9 +195,9 @@ export function AddPrizeForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Lottery</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a lottery" />
                   </SelectTrigger>
                 </FormControl>
@@ -208,7 +208,7 @@ export function AddPrizeForm() {
                       value={lottery.id}
                       className="hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      Draw date: {format(new Date(lottery.draw_date), 'PPP')}
+                      Draw date: {formatDateNorwegian(lottery.draw_date, 'PPP')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -218,7 +218,7 @@ export function AddPrizeForm() {
           )}
         />
 
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" /> Add Prize
         </Button>
       </form>
