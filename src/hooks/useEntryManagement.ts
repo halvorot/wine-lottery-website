@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,16 +99,23 @@ export function useEntryManagement() {
         }
       } else {
         // Insert new entry
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("lottery_entries")
           .insert([{
             name: entry.name,
             email: entry.email,
             num_tickets: entry.num_tickets,
             lottery_id: activeLottery.id,
-          }]);
+          }])
+          .select()
+          .single();
 
         if (error) throw error;
+        
+        // Set the newly created entry as the existing entry
+        if (data) {
+          setExistingEntry(data);
+        }
       }
     },
     onSuccess: (_, variables) => {

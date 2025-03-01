@@ -87,7 +87,7 @@ export function LotteryItem({ lottery, onDelete, isActive }: LotteryItemProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="text-destructive hover:text-destructive/90 mr-4"
+          className="mr-4"
           onClick={() => onDelete(lottery.id)}
         >
           <Trash2 className="h-4 w-4" />

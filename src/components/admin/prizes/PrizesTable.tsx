@@ -91,10 +91,9 @@ export function PrizesTable({
         onPageChange={onPageChange}
         renderActions={(prize) => (
           <Button
-            variant="ghost"
+            variant="destructive"
             size="icon"
             onClick={() => handleDeleteClick(prize)}
-            className="text-destructive hover:text-destructive/90"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

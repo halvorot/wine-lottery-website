@@ -47,7 +47,7 @@ export function CreateLotteryDialog() {
       if (!newOpen) resetForm();
     }}>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-full sm:w-auto">Create New Lottery</Button>
+        <Button variant="outline" className="w-full sm:w-auto">Create New Lottery</Button>
       </DialogTrigger>
       <DialogContent className="max-w-[90vw] sm:max-w-[425px]">
         <DialogHeader>
