@@ -94,8 +94,8 @@ export const DeleteEntryDialog = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
           <AlertDialogAction 
+            variant="destructive"
             onClick={handleConfirmDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete
           </AlertDialogAction>

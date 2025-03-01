@@ -172,10 +172,9 @@ export function PrizesTable({
                   <TableCell className="hidden sm:table-cell whitespace-nowrap">{formatDateNorwegian(prize.created_at, "PP")}</TableCell>
                   <TableCell>
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       size="icon"
                       onClick={() => handleDeleteClick(prize)}
-                      className="text-destructive hover:text-destructive/90"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -226,8 +225,8 @@ export function PrizesTable({
           <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
             <AlertDialogAction 
+              variant="destructive"
               onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

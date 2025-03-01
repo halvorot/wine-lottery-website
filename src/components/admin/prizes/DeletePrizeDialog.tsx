@@ -1,4 +1,3 @@
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,8 +89,8 @@ export function DeletePrizeDialog({ prize, open, onOpenChange }: DeletePrizeDial
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction 
+            variant="destructive"
             onClick={handleConfirmDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete
           </AlertDialogAction>
