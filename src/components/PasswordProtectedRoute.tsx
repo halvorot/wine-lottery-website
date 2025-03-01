@@ -120,9 +120,6 @@ export function PasswordProtectedRoute({ children }: PasswordProtectedRouteProps
         >
           Enter Password
         </Button>
-        <p className="text-sm text-yellow-600 mt-4">
-          You can navigate to the Admin tab without entering a password.
-        </p>
       </div>
       
       <PasswordVerificationModal
