@@ -144,7 +144,7 @@ export const AdminLogin = () => {
             </Button>
           </div>
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" variant="default" className="w-full" disabled={isLoading}>
           {isLoading ? "Logging in..." : "Login with Email"}
         </Button>
         <div className="relative my-4">

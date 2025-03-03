@@ -73,6 +73,7 @@ export function CreateLotteryDialog() {
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           <Button
             onClick={handleCreate}
+            variant="default"
             disabled={!drawDate || !drawTime || !password || createLotteryMutation.isPending}
             className="w-full sm:w-auto"
           >
