@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,136 +9,77 @@ import { supabase } from "@/integrations/supabase/client";
 export const ResetPassword = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [isProcessing, setIsProcessing] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Process auth parameters when the component loads
   useEffect(() => {
-    const processAuthParams = async () => {
+    const handleHashFragment = async () => {
       try {
         console.log("Current URL:", window.location.href);
-        console.log("Hash:", location.hash);
-        console.log("Search params:", Object.fromEntries(searchParams.entries()));
+        console.log("Hash:", window.location.hash);
         
-        // Look for auth parameters in both hash and query params
-        if (location.hash && location.hash.includes('type=recovery')) {
-          console.log("Auth recovery hash detected");
+        // The hash will contain access_token, type=recovery, etc.
+        if (window.location.hash && window.location.hash.includes('type=recovery')) {
+          console.log("Auth recovery hash detected, processing token...");
           
-          // This exchanges the recovery token in the URL for a session
+          // This function will automatically extract the token from the URL hash
+          // and set up the session accordingly
           const { data, error } = await supabase.auth.getSession();
           
           if (error) {
-            console.error("Session error:", error);
+            console.error("Session error during hash handling:", error);
+            setAuthError("Invalid or expired reset link. Please request a new one.");
+            setIsProcessing(false);
             toast({
               title: "Invalid Reset Link",
               description: "There was a problem with your reset link. Please request a new one.",
               variant: "destructive",
             });
-            navigate("/");
             return;
           }
           
-          if (data.session) {
-            console.log("Session successfully recovered for password reset");
+          if (data && data.session) {
+            console.log("Auth session established for password reset");
             setIsProcessing(false);
           } else {
             console.error("No session found after hash handling");
+            setAuthError("Session not found. Please try again with a new reset link.");
+            setIsProcessing(false);
             toast({
-              title: "Session Expired",
-              description: "Your password reset session has expired. Please try again.",
+              title: "Authentication Failed",
+              description: "Could not authenticate with the provided link. Please request a new one.",
               variant: "destructive",
             });
-            navigate("/");
-          }
-        } 
-        // Check for token in query parameters (some Supabase configurations use this)
-        else if (searchParams.get('token_hash') || searchParams.get('type')) {
-          console.log("Auth parameters detected in query string");
-          
-          const token = searchParams.get('token_hash');
-          const type = searchParams.get('type');
-          
-          if (type === 'recovery' && token) {
-            // Some Supabase configurations might use URL params instead of hash
-            try {
-              // This will set the token from params
-              const { error } = await supabase.auth.refreshSession({ refresh_token: token });
-              
-              if (error) {
-                console.error("Token refresh error:", error);
-                toast({
-                  title: "Invalid Reset Link",
-                  description: "Your password reset link is invalid or has expired. Please request a new one.",
-                  variant: "destructive",
-                });
-                navigate("/");
-              } else {
-                console.log("Token successfully processed");
-                setIsProcessing(false);
-              }
-            } catch (err) {
-              console.error("Token processing error:", err);
-              toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try requesting a new password reset.",
-                variant: "destructive",
-              });
-              navigate("/");
-            }
-          } else {
-            // No valid token found in params
-            checkSession();
           }
         } else {
-          // No auth parameters found, check if user has active session
-          checkSession();
+          console.log("No auth hash fragment detected.");
+          setAuthError("Invalid reset link format. Please request a new one.");
+          setIsProcessing(false);
+          toast({
+            title: "Invalid Reset Link",
+            description: "The reset link appears to be invalid. Please request a new one.",
+            variant: "destructive",
+          });
         }
       } catch (err) {
-        console.error("Auth parameter processing error:", err);
+        console.error("Error processing auth parameters:", err);
+        setAuthError("An unexpected error occurred. Please try again.");
+        setIsProcessing(false);
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
-        navigate("/");
       }
     };
 
-    processAuthParams();
-  }, [location, navigate, searchParams, toast]);
-
-  // Verify that we have a session
-  const checkSession = async () => {
-    try {
-      const { data } = await supabase.auth.getSession();
-      
-      if (data.session) {
-        console.log("Active session found for password reset");
-        setIsProcessing(false);
-      } else {
-        console.log("No active session found for password reset");
-        toast({
-          title: "Session Expired",
-          description: "Your password reset session has expired. Please request a new link.",
-          variant: "destructive",
-        });
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Session check error:", error);
-      toast({
-        title: "Error",
-        description: "Could not verify your session. Please try again.",
-        variant: "destructive",
-      });
-      navigate("/");
-    }
-  };
+    handleHashFragment();
+  }, [toast]);
 
   const validatePasswords = () => {
     if (password.length < 6) {
@@ -165,6 +106,8 @@ export const ResetPassword = () => {
     setIsLoading(true);
 
     try {
+      // This will update the password for the user that is currently in the session
+      // which was established when we processed the hash above
       const { error } = await supabase.auth.updateUser({
         password: password
       });
@@ -205,6 +148,18 @@ export const ResetPassword = () => {
       <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg mt-16 text-center">
         <p className="mb-4">Verifying your reset link...</p>
         <div className="h-8 w-8 border-4 border-t-wine/50 border-wine rounded-full animate-spin mx-auto"></div>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg mt-16 text-center">
+        <h2 className="text-xl font-semibold text-red-600 mb-4">Authentication Error</h2>
+        <p className="mb-6">{authError}</p>
+        <Button onClick={() => navigate("/")} className="w-full">
+          Return to Home
+        </Button>
       </div>
     );
   }

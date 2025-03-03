@@ -73,13 +73,14 @@ export const AdminLogin = () => {
     setIsResetLoading(true);
 
     try {
-      // Get the base URL of the current page without any paths
+      // Get the absolute URL for the reset password page
       const baseUrl = window.location.origin;
       const resetUrl = `${baseUrl}/reset-password`;
       
       console.log("Sending password reset to email:", resetEmail);
       console.log("Using redirect URL:", resetUrl);
 
+      // Send the password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
         redirectTo: resetUrl,
       });

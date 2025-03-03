@@ -13,9 +13,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* Handle all variations of the reset password route */}
+          {/* Make sure we catch the reset password route with any URL fragment or parameters */}
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
