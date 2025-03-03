@@ -15,7 +15,6 @@ function App() {
           <Route path="/" element={<Index />} />
           {/* Make sure we catch the reset password route with any URL fragment or parameters */}
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
       </Router>
