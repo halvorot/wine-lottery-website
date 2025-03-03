@@ -135,13 +135,13 @@ export function AddPrizeForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prize Name</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Prize Name</FormLabel>
               <FormControl>
                 <Input placeholder="2018 Château Margaux" {...field} className="w-full" />
               </FormControl>
@@ -154,13 +154,13 @@ export function AddPrizeForm() {
           control={form.control}
           name="description"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Enter prize description..."
                   {...field}
-                  className="w-full"
+                  className="w-full min-h-[100px]"
                 />
               </FormControl>
               <FormMessage />
@@ -172,8 +172,8 @@ export function AddPrizeForm() {
           control={form.control}
           name="price"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price (NOK)</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Price (NOK)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -193,8 +193,8 @@ export function AddPrizeForm() {
           control={form.control}
           name="lotteryId"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lottery</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Lottery</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -218,9 +218,11 @@ export function AddPrizeForm() {
           )}
         />
 
-        <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" /> Add Prize
-        </Button>
+        <div className="flex justify-start">
+          <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" /> Add Prize
+          </Button>
+        </div>
       </form>
     </Form>
   );
