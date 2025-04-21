@@ -73,7 +73,7 @@
     "bun": "1.2.10",
     "eslint": "9.25.1",
     "eslint-plugin-react-hooks": "5.2.0",
-    "eslint-plugin-react-refresh": "0.4.19",
+    "eslint-plugin-react-refresh": "0.4.20",
     "globals": "16.0.0",
     "lovable-tagger": "1.1.8",
     "postcss": "8.5.3",
