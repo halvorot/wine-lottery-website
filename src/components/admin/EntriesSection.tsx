@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { SortColumn, SortDirection } from "@/components/lottery/types";
@@ -96,18 +95,19 @@ export const EntriesSection = ({
         onDeleteClick={handleDeleteClick}
       />
 
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div className="text-sm text-muted-foreground order-2 sm:order-1">
           {totalEntries === 0 
             ? "No entries found"
             : `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`
           }
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
           <Button
             variant="outline"
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1 || totalEntries === 0}
+            className="flex-1 sm:flex-none"
           >
             Previous
           </Button>
@@ -115,6 +115,7 @@ export const EntriesSection = ({
             variant="outline"
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page >= totalPages || totalEntries === 0}
+            className="flex-1 sm:flex-none"
           >
             Next
           </Button>

@@ -116,13 +116,30 @@ export const LiveDrawTab = () => {
     const { data: availablePrizes, error: prizesError } = await supabase
         .from('prizes')
         .select('*')
-        .eq("lottery_id", activeLottery.id)
-        .not('id', 'in', (winners || []).map(w => w.prize_id).filter(Boolean));
+        .eq("lottery_id", activeLottery.id);
+        
+    // Filter out prizes that have already been awarded
+    const awardedPrizeIds = (winners || []).map(w => w.prize_id).filter(Boolean);
+    
+    // If there are awarded prizes, filter them out
+    let filteredPrizes = availablePrizes;
+    if (awardedPrizeIds.length > 0) {
+      filteredPrizes = availablePrizes?.filter(prize => !awardedPrizeIds.includes(prize.id)) || [];
+    }
 
-    if (prizesError || !availablePrizes || availablePrizes.length === 0) {
+    if (prizesError) {
       toast({
         title: "Error",
-        description: "No available prizes for today",
+        description: "Failed to fetch prizes: " + prizesError.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!filteredPrizes || filteredPrizes.length === 0) {
+      toast({
+        title: "No Available Prizes",
+        description: "All prizes have been awarded. No more prizes available for today's draw.",
         variant: "destructive",
       });
       return;
@@ -130,7 +147,7 @@ export const LiveDrawTab = () => {
 
     // Randomly select a winner
     const randomEntry = entries[Math.floor(Math.random() * entries.length)];
-    const randomPrize = availablePrizes[Math.floor(Math.random() * availablePrizes.length)];
+    const randomPrize = filteredPrizes[Math.floor(Math.random() * filteredPrizes.length)];
 
     // Insert winner record
     const { error: winnerError } = await supabase
@@ -171,10 +188,6 @@ export const LiveDrawTab = () => {
       prizeName: randomPrize.name
     });
 
-    toast({
-      title: "Success!",
-      description: `Winner drawn successfully! ${randomEntry.name} has won ${randomPrize.name}!`
-    });
   };
 
   const calculateWinningChance = (numTickets: number) => {

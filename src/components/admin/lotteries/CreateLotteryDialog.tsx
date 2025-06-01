@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,9 +47,9 @@ export function CreateLotteryDialog() {
       if (!newOpen) resetForm();
     }}>
       <DialogTrigger asChild>
-        <Button variant="default">Create New Lottery</Button>
+        <Button variant="outline" className="w-full sm:w-auto">Create New Lottery</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-[90vw] sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Lottery</DialogTitle>
           <DialogDescription>
@@ -71,10 +70,12 @@ export function CreateLotteryDialog() {
             onPasswordChange={setPassword} 
           />
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           <Button
             onClick={handleCreate}
+            variant="default"
             disabled={!drawDate || !drawTime || !password || createLotteryMutation.isPending}
+            className="w-full sm:w-auto"
           >
             {createLotteryMutation.isPending ? "Creating..." : "Create Lottery"}
           </Button>

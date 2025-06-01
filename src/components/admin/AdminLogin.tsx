@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const AdminLogin = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [isResetLoading, setIsResetLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +68,50 @@ export const AdminLogin = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetLoading(true);
+
+    try {
+      // Get the absolute URL for the reset password page
+      const baseUrl = window.location.origin;
+      const resetUrl = `${baseUrl}/reset-password`;
+      
+      console.log("Sending password reset to email:", resetEmail);
+      console.log("Using redirect URL:", resetUrl);
+
+      // Send the password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: resetUrl,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Password Reset Email Sent",
+          description: "Check your email for a password reset link.",
+        });
+        setForgotPasswordOpen(false);
+        setResetEmail("");
+      }
+    } catch (error) {
+      console.error("Password reset error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto bg-white rounded-2xl p-8 shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
@@ -85,8 +133,18 @@ export const AdminLogin = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div className="flex justify-end mt-2">
+            <Button 
+              type="button" 
+              variant="link" 
+              className="p-0 h-auto text-sm text-wine"
+              onClick={() => setForgotPasswordOpen(true)}
+            >
+              Forgot password?
+            </Button>
+          </div>
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" variant="default" className="w-full" disabled={isLoading}>
           {isLoading ? "Logging in..." : "Login with Email"}
         </Button>
         <div className="relative my-4">
@@ -126,6 +184,37 @@ export const AdminLogin = () => {
           Login with Google
         </Button>
       </form>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Your Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div className="py-2">
+              <p className="text-sm text-gray-600 mb-4">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setForgotPasswordOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isResetLoading}>
+                {isResetLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

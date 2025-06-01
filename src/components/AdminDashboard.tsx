@@ -1,16 +1,16 @@
 
 import { useToast } from "./ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { AdminAuthWrapper } from "./admin/AdminAuthWrapper";
 import { AdminContent } from "./admin/AdminContent";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminDashboard = () => {
   const { toast } = useToast();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
-      await supabase.auth.signOut();
+      await signOut();
     } catch (error) {
       console.error("Logout error:", error);
       toast({

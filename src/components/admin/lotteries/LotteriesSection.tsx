@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -52,13 +51,13 @@ export function LotteriesSection() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <h3 className="text-xl font-semibold">Lotteries</h3>
         <CreateLotteryDialog />
       </div>
 
       {(!lotteries || lotteries.length === 0) ? (
-        <div className="text-center p-8 bg-cream/50 rounded-lg">
+        <div className="text-center p-4 sm:p-8 bg-cream/50 rounded-lg">
           <p className="text-lg text-wine font-semibold mb-2">No Lotteries Found</p>
           <p className="text-charcoal/80 mb-4">
             Get started by creating your first lottery event using the button above.

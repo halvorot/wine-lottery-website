@@ -30,7 +30,14 @@ export function useLotteryEntries(entriesPerPage: number = 10) {
       if (error) throw error;
       
       // Transform the data to match the LotteryEntry type
-      return data.map((entry: any) => ({
+      return data.map((entry: { 
+        id: string; 
+        name: string; 
+        email: string; 
+        num_tickets: number; 
+        created_at: string; 
+        lotteries: { draw_date: string } 
+      }) => ({
         id: entry.id,
         name: entry.name,
         email: entry.email,

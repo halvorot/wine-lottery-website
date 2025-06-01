@@ -31,12 +31,12 @@ export function LotteryTimePicker({ drawTime, onTimeChange }: LotteryTimePickerP
       <Label htmlFor="drawTime">Draw Time</Label>
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 text-gray-500" />
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full">
           <Select value={hours} onValueChange={(value) => handleTimeChange('hours', value)}>
-            <SelectTrigger className="w-[80px] bg-background">
+            <SelectTrigger className="w-full sm:w-[80px] bg-background">
               <SelectValue placeholder="Hours" />
             </SelectTrigger>
-            <SelectContent className="bg-background">
+            <SelectContent className="bg-background max-h-[40vh] overflow-y-auto">
               {hoursOptions.map((hour) => (
                 <SelectItem key={hour} value={hour}>
                   {hour}
@@ -46,10 +46,10 @@ export function LotteryTimePicker({ drawTime, onTimeChange }: LotteryTimePickerP
           </Select>
           <span className="flex items-center">:</span>
           <Select value={minutes} onValueChange={(value) => handleTimeChange('minutes', value)}>
-            <SelectTrigger className="w-[80px] bg-background">
+            <SelectTrigger className="w-full sm:w-[80px] bg-background">
               <SelectValue placeholder="Minutes" />
             </SelectTrigger>
-            <SelectContent className="bg-background">
+            <SelectContent className="bg-background max-h-[40vh] overflow-y-auto">
               {minutesOptions.map((minute) => (
                 <SelectItem key={minute} value={minute}>
                   {minute}

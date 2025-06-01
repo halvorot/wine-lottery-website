@@ -137,6 +137,39 @@
     @apply bg-background text-foreground font-sans;
   }
 
+  /* 
+   * Cursor styles - following web standards and best practices
+   */
+  
+  /* Apply pointer cursor only to links and custom interactive elements */
+  a[href]:not([tabindex="-1"]),
+  [role="link"]:not([tabindex="-1"]),
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  
+  /* Apply pointer cursor to buttons for better UX in modern web applications */
+  button:not(:disabled),
+  .TabsTrigger:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  
+  /* Disabled elements show not-allowed cursor */
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  
+  /* Text inputs maintain the text cursor */
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]):not(:disabled),
+  textarea:not(:disabled) {
+    cursor: text;
+  }
+
   .animate-ticker {
     animation: ticker 20s linear infinite;
   }

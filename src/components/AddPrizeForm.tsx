@@ -1,4 +1,3 @@
-
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { formatDateNorwegian } from "@/lib/date-utils";
 
 type PrizeFormData = {
   name: string;
@@ -136,15 +135,15 @@ export function AddPrizeForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prize Name</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Prize Name</FormLabel>
               <FormControl>
-                <Input placeholder="2018 Château Margaux" {...field} />
+                <Input placeholder="2018 Château Margaux" {...field} className="w-full" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -155,12 +154,13 @@ export function AddPrizeForm() {
           control={form.control}
           name="description"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Enter prize description..."
                   {...field}
+                  className="w-full min-h-[100px]"
                 />
               </FormControl>
               <FormMessage />
@@ -172,8 +172,8 @@ export function AddPrizeForm() {
           control={form.control}
           name="price"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price (NOK)</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Price (NOK)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -181,7 +181,7 @@ export function AddPrizeForm() {
                   step="0.01"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
-
+                  className="w-full"
                 />
               </FormControl>
               <FormMessage />
@@ -193,11 +193,11 @@ export function AddPrizeForm() {
           control={form.control}
           name="lotteryId"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lottery</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-left">Lottery</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a lottery" />
                   </SelectTrigger>
                 </FormControl>
@@ -208,7 +208,7 @@ export function AddPrizeForm() {
                       value={lottery.id}
                       className="hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      Draw date: {format(new Date(lottery.draw_date), 'PPP')}
+                      Draw date: {formatDateNorwegian(lottery.draw_date, 'PPP')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -218,9 +218,11 @@ export function AddPrizeForm() {
           )}
         />
 
-        <Button type="submit" disabled={isLoading}>
-          <Plus className="mr-2 h-4 w-4" /> Add Prize
-        </Button>
+        <div className="flex justify-start">
+          <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" /> Add Prize
+          </Button>
+        </div>
       </form>
     </Form>
   );

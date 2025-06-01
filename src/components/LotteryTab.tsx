@@ -34,7 +34,7 @@ export const LotteryTab = () => {
           <Wine size={48} className="text-wine mx-auto mb-4" strokeWidth={1.5} />
         </div>
         <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-wine to-gold bg-clip-text text-transparent">
-          {activeLottery ? "Welcome to Today's Wine Lottery!" : "Wine Lottery"}
+          {activeLottery ? "Welcome to The Wine Lottery!" : "Wine Lottery"}
         </h1>
         <p className="text-lg text-charcoal/80 max-w-2xl mx-auto">
           {activeLottery 

@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Trash2 } from "lucide-react";
@@ -16,6 +15,7 @@ import {
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateNorwegian } from "@/lib/date-utils";
 
 interface Prize {
   id: string;
@@ -132,26 +132,26 @@ export function PrizesTable({
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="cursor-pointer">
+              <TableHead className="cursor-pointer whitespace-nowrap">
                 Prize {renderSortIcon("name")}
               </TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="cursor-pointer">
-                Quantity {renderSortIcon("quantity")}
+              <TableHead className="hidden sm:table-cell">Description</TableHead>
+              <TableHead className="cursor-pointer whitespace-nowrap">
+                Qty {renderSortIcon("quantity")}
               </TableHead>
-              <TableHead>Remaining</TableHead>
-              <TableHead className="cursor-pointer">
+              <TableHead className="hidden sm:table-cell whitespace-nowrap">Remaining</TableHead>
+              <TableHead className="cursor-pointer whitespace-nowrap">
                 Draw Date {renderSortIcon("draw_date")}
               </TableHead>
-              <TableHead className="cursor-pointer">
+              <TableHead className="hidden sm:table-cell cursor-pointer whitespace-nowrap">
                 Added {renderSortIcon("created_at")}
               </TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="w-[60px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -164,18 +164,17 @@ export function PrizesTable({
             ) : (
               prizes.map((prize) => (
                 <TableRow key={prize.id}>
-                  <TableCell>{prize.name}</TableCell>
-                  <TableCell>{prize.description || "-"}</TableCell>
+                  <TableCell className="font-medium">{prize.name}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{prize.description || "-"}</TableCell>
                   <TableCell>{prize.quantity}</TableCell>
-                  <TableCell>{prize.remaining_quantity}</TableCell>
-                  <TableCell>{format(new Date(prize.draw_date), "PPP")}</TableCell>
-                  <TableCell>{format(new Date(prize.created_at), "PPP")}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{prize.remaining_quantity}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDateNorwegian(prize.draw_date, "PP")}</TableCell>
+                  <TableCell className="hidden sm:table-cell whitespace-nowrap">{formatDateNorwegian(prize.created_at, "PP")}</TableCell>
                   <TableCell>
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       size="icon"
                       onClick={() => handleDeleteClick(prize)}
-                      className="text-destructive hover:text-destructive/90"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -187,19 +186,20 @@ export function PrizesTable({
         </Table>
       </div>
 
-      <div className="flex justify-between items-center mt-4">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-2">
+        <div className="text-sm text-muted-foreground order-2 sm:order-1">
           {totalCount === 0 ? (
             "No prizes found"
           ) : (
             `Showing ${startIndex} to ${endIndex} of ${totalCount} prizes`
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
           <Button
             variant="outline"
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1 || totalCount === 0}
+            className="flex-1 sm:flex-none"
           >
             Previous
           </Button>
@@ -207,6 +207,7 @@ export function PrizesTable({
             variant="outline"
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page >= totalPages || totalCount === 0}
+            className="flex-1 sm:flex-none"
           >
             Next
           </Button>
@@ -214,18 +215,18 @@ export function PrizesTable({
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete {selectedPrize?.name}. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
             <AlertDialogAction 
+              variant="destructive"
               onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

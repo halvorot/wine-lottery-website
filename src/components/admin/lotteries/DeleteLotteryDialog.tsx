@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -70,13 +69,13 @@ export function DeleteLotteryDialog({ lotteryId, onOpenChange }: DeleteLotteryDi
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogAction 
+            variant="destructive"
             onClick={() => {
               if (lotteryId) {
                 deleteLotteryMutation.mutate(lotteryId);
               }
             }}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             Delete
           </AlertDialogAction>

@@ -1,48 +1,49 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useAuthStatus() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { session } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!session);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-
-      if (session) {
-        const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
-        if (!error) {
-          setIsAdmin(adminStatus);
-        }
-      }
-    };
-    
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        // Clear the state immediately on sign out
-        setIsAuthenticated(false);
+    // This function checks if a user is an admin
+    const checkAdminStatus = async (userId: string | undefined) => {
+      if (!userId) {
         setIsAdmin(false);
         return;
       }
-      
-      setIsAuthenticated(!!session);
-      
-      if (session) {
+
+      try {
         const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
-        if (!error) {
-          setIsAdmin(adminStatus);
+        
+        if (error) {
+          console.error("Admin check error:", error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!adminStatus);
         }
-      } else {
+      } catch (error) {
+        console.error("Error checking admin status:", error);
         setIsAdmin(false);
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    // Update authentication state based on session
+    if (session) {
+      setIsAuthenticated(true);
+      checkAdminStatus(session.user.id);
+    } else {
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+    }
+    
+    // Always set loading to false when authentication state is determined
+    setIsLoading(false);
+  }, [session]);
 
-  return { isAuthenticated, isAdmin };
+  return { isAuthenticated, isAdmin, isLoading };
 }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,7 +108,9 @@ export function EntryForm({
         type="submit"
         disabled={isSubmitting || (existingEntry && !hasChanges) || (!existingEntry && numTickets === 0)}
         variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
-        className="w-full bg-wine hover:bg-wine-light text-white"
+        className={existingEntry && numTickets === 0 
+          ? "w-full" 
+          : "w-full bg-wine hover:bg-wine-light text-white"}
       >
         {isSubmitting
           ? "Submitting..."
