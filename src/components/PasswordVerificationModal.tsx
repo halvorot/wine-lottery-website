@@ -66,7 +66,7 @@ export function PasswordVerificationModal({
     if (storedAttempts && !isLocked) {
       setAttemptsLeft(parseInt(storedAttempts, 10));
     }
-  }, [isOpen]);
+  }, [isOpen, isLocked]);
 
   // Update countdown timer if locked
   useEffect(() => {

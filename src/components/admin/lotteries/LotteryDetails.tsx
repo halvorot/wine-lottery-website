@@ -88,16 +88,16 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
   };
 
   const sortedPrizes = prizes?.sort((a, b) => {
-    const aValue = (a as any)[prizeSort.column];
-    const bValue = (b as any)[prizeSort.column];
+    const aValue = a[prizeSort.column as keyof Prize];
+    const bValue = b[prizeSort.column as keyof Prize];
     return prizeSort.direction === "asc"
       ? aValue > bValue ? 1 : -1
       : aValue < bValue ? 1 : -1;
   });
 
   const sortedEntries = entries?.sort((a, b) => {
-    const aValue = (a as any)[entrySort.column];
-    const bValue = (b as any)[entrySort.column];
+    const aValue = a[entrySort.column as keyof Entry];
+    const bValue = b[entrySort.column as keyof Entry];
     return entrySort.direction === "asc"
       ? aValue > bValue ? 1 : -1
       : aValue < bValue ? 1 : -1;

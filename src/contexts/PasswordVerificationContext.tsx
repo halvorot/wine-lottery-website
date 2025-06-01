@@ -153,7 +153,7 @@ export function PasswordVerificationProvider({
     }
     
     checkVerification();
-  }, [activeLottery?.id, isAdmin]);
+  }, [activeLottery, checkVerification, isVerified, lastCheckedLotteryId, isAdmin]);
 
   // Reset verification when admin status changes from true to false (logout)
   useEffect(() => {
