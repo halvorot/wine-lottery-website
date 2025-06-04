@@ -68,7 +68,7 @@
     "@tailwindcss/typography": "0.5.16",
     "@types/node": "22.15.29",
     "@types/react": "19.1.6",
-    "@types/react-dom": "19.1.5",
+    "@types/react-dom": "19.1.6",
     "@vitejs/plugin-react-swc": "3.10.1",
     "bun": "1.2.15",
     "eslint": "9.28.0",
