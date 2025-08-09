@@ -63,7 +63,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@eslint/js": "9.32.0",
+    "@eslint/js": "9.33.0",
     "@tailwindcss/postcss": "4.1.11",
     "@tailwindcss/typography": "0.5.16",
     "@types/node": "22.17.1",
@@ -71,7 +71,7 @@
     "@types/react-dom": "19.1.7",
     "@vitejs/plugin-react-swc": "3.11.0",
     "bun": "1.2.19",
-    "eslint": "9.32.0",
+    "eslint": "9.33.0",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.20",
     "globals": "16.3.0",
