@@ -52,7 +52,7 @@
     "react": "19.2.0",
     "react-day-picker": "9.11.0",
     "react-dom": "19.2.0",
-    "react-hook-form": "7.63.0",
+    "react-hook-form": "7.64.0",
     "react-resizable-panels": "3.0.6",
     "react-router-dom": "7.9.3",
     "recharts": "3.2.1",
