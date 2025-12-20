@@ -2,26 +2,23 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
-import { useToast } from "@/components/ui/use-toast";
+import { hashPassword } from "@/utils/crypto";
 
 interface PasswordVerificationContextType {
   isVerified: boolean;
-  checkVerification: () => Promise<void>;
-  setVerified: (value: boolean) => void;
-  isCheckingVerification: boolean;
+  isLoading: boolean;
+  verifyPassword: (password: string) => Promise<{ success: boolean; error?: string }>;
+  checkExistingVerification: () => Promise<void>;
   resetVerification: () => void;
 }
 
 const PasswordVerificationContext = createContext<PasswordVerificationContextType>({
   isVerified: false,
-  checkVerification: async () => {},
-  setVerified: () => {},
-  isCheckingVerification: false,
+  isLoading: false,
+  verifyPassword: async () => ({ success: false }),
+  checkExistingVerification: async () => {},
   resetVerification: () => {},
 });
-
-// Timeout for verification check in milliseconds (10 seconds)
-const VERIFICATION_TIMEOUT = 10000;
 
 export function PasswordVerificationProvider({
   children,
@@ -29,144 +26,169 @@ export function PasswordVerificationProvider({
   children: React.ReactNode;
 }) {
   const [isVerified, setIsVerified] = useState(false);
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
-  const [lastCheckedLotteryId, setLastCheckedLotteryId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentLotteryId, setCurrentLotteryId] = useState<string | null>(null);
   const { data: activeLottery } = useActiveLottery();
   const { isAdmin } = useAuthStatus();
-  const { toast } = useToast();
 
-  // Function to reset verification state
-  const resetVerification = () => {
-    setIsVerified(false);
-    setLastCheckedLotteryId(null);
-  };
-
-  // Listen for logout events via URL parameters
+  // Reset verification when lottery changes
   useEffect(() => {
-    const handleUrlChange = () => {
-      const params = new URLSearchParams(window.location.search);
-      const fromLogout = params.get('fromLogout') === 'true';
-      
-      if (fromLogout) {
-        // Reset verification state on logout
-        resetVerification();
-        
-        // Remove the fromLogout parameter to avoid issues on refresh
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete('fromLogout');
-        window.history.replaceState({}, '', newUrl.toString());
-      }
-    };
-
-    // Check on mount
-    handleUrlChange();
-
-    // Listen for URL changes
-    window.addEventListener('popstate', handleUrlChange);
-    
-    return () => {
-      window.removeEventListener('popstate', handleUrlChange);
-    };
-  }, []);
-
-  const checkVerification = useCallback(async () => {
-    // If already checking, don't start another check
-    if (isCheckingVerification) {
-      return;
+    if (activeLottery?.id !== currentLotteryId) {
+      setIsVerified(false);
+      setCurrentLotteryId(activeLottery?.id || null);
     }
+  }, [activeLottery?.id, currentLotteryId]);
 
-    setIsCheckingVerification(true);
+  // Reset verification when admin logs out
+  useEffect(() => {
+    if (!isAdmin && currentLotteryId) {
+      setIsVerified(false);
+    }
+  }, [isAdmin, currentLotteryId]);
 
-    // Create a timeout promise
-    const timeoutPromise = new Promise<void>((_, reject) => {
-      setTimeout(() => {
-        reject(new Error("Verification check timed out"));
-      }, VERIFICATION_TIMEOUT);
-    });
+  // Check existing verification on mount and when lottery changes
+  const checkExistingVerification = useCallback(async () => {
+    setIsLoading(true);
 
     try {
-      // Race the verification check against the timeout
-      await Promise.race([
-        (async () => {
-          // If user is admin, they're automatically verified
-          if (isAdmin) {
-            setIsVerified(true);
-            return;
-          }
+      // Admins are always verified
+      if (isAdmin) {
+        setIsVerified(true);
+        setIsLoading(false);
+        return;
+      }
 
-          // If there's no active lottery, no verification needed
-          if (!activeLottery) {
-            setIsVerified(true);
-            return;
-          }
+      // No active lottery = no verification needed
+      if (!activeLottery) {
+        setIsVerified(true);
+        setIsLoading(false);
+        return;
+      }
 
-          // Get user's IP address
-          const response = await fetch('https://api.ipify.org?format=json');
-          const { ip } = await response.json();
+      // Get user IP
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const { ip } = await ipResponse.json();
 
-          const { data, error } = await supabase
-            .from("password_verifications")
-            .select("*")
-            .eq("lottery_id", activeLottery.id)
-            .eq("user_ip", ip)
-            .maybeSingle();
+      // Check if verification exists
+      const { data } = await supabase
+        .from("password_verifications")
+        .select("*")
+        .eq("lottery_id", activeLottery.id)
+        .eq("user_ip", ip)
+        .maybeSingle();
 
-          if (error) throw error;
-
-          // Update verification state and remember which lottery we checked
-          setIsVerified(!!data);
-          setLastCheckedLotteryId(activeLottery.id);
-        })(),
-        timeoutPromise
-      ]);
+      setIsVerified(!!data);
     } catch (error) {
       console.error("Error checking verification:", error);
       setIsVerified(false);
-
-      // Only show toast for critical errors that prevent the app from functioning
-      toast({
-        title: "Verification Error",
-        description: "Failed to check verification status. Please refresh the page.",
-        variant: "destructive",
-      });
     } finally {
-      setIsCheckingVerification(false);
+      setIsLoading(false);
     }
-  }, [isCheckingVerification, isAdmin, activeLottery, toast]);
+  }, [isAdmin, activeLottery]);
 
-  // Check verification when active lottery or admin status changes
-  useEffect(() => {
-    // Skip check if no active lottery or if user is admin (they're always verified)
-    if (!activeLottery && !isAdmin) {
+  // Verify password
+  const verifyPassword = useCallback(async (password: string): Promise<{ success: boolean; error?: string }> => {
+    console.log("verifyPassword called with password length:", password?.length);
+    console.log("activeLottery:", activeLottery?.id);
+
+    if (!activeLottery) {
+      console.log("No active lottery");
+      return { success: false, error: "No active lottery found" };
+    }
+
+    if (!password.trim()) {
+      console.log("Empty password");
+      return { success: false, error: "Please enter a password" };
+    }
+
+    try {
+      // Hash the password
+      console.log("Hashing password...");
+      const hashedPassword = await hashPassword(password);
+      console.log("Hashed password:", hashedPassword?.substring(0, 20) + "...");
+
+      // Get lottery password
+      console.log("Fetching lottery password from DB...");
+      const { data: passwordData, error: passwordError } = await supabase
+        .from("lottery_passwords")
+        .select("password")
+        .eq("lottery_id", activeLottery.id)
+        .maybeSingle();
+
+      console.log("Password data:", passwordData ? "found" : "not found");
+      console.log("Password error:", passwordError);
+
+      if (passwordError) {
+        console.error("Database error fetching password:", passwordError);
+        throw passwordError;
+      }
+
+      if (!passwordData?.password) {
+        console.log("No password set for lottery");
+        return { success: false, error: "No password set for this lottery" };
+      }
+
+      console.log("Stored password:", passwordData.password.substring(0, 20) + "...");
+      console.log("Passwords match:", hashedPassword === passwordData.password);
+
+      // Check if password is correct
+      if (hashedPassword !== passwordData.password) {
+        console.log("Password mismatch");
+        return { success: false, error: "Incorrect password" };
+      }
+
+      // Password is correct - get user IP and store verification
+      console.log("Password correct, getting IP...");
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      const { ip } = await ipResponse.json();
+      console.log("IP:", ip);
+
+      // Store verification
+      console.log("Storing verification...");
+      const { error: insertError } = await supabase
+        .from("password_verifications")
+        .insert([{
+          lottery_id: activeLottery.id,
+          user_ip: ip
+        }]);
+
+      console.log("Insert error:", insertError);
+
+      // If error is duplicate key, that's fine - already verified
+      if (insertError && !insertError.message.includes('duplicate')) {
+        console.error("Insert error (not duplicate):", insertError);
+        throw insertError;
+      }
+
+      // Success - update state
+      console.log("Verification successful!");
       setIsVerified(true);
-      return;
+      return { success: true };
+    } catch (error) {
+      console.error("Error verifying password (caught):", error);
+      return { success: false, error: `Failed to verify password: ${error instanceof Error ? error.message : String(error)}` };
     }
+  }, [activeLottery]);
 
-    // Skip check if we've already verified this lottery
-    if (activeLottery && lastCheckedLotteryId === activeLottery.id) {
-      return;
-    }
+  // Reset verification
+  const resetVerification = useCallback(() => {
+    setIsVerified(false);
+    setCurrentLotteryId(null);
+  }, []);
 
-    checkVerification();
-  }, [activeLottery, checkVerification, lastCheckedLotteryId, isAdmin]);
-
-  // Reset verification when admin status changes from true to false (logout)
+  // Initial check on mount and when lottery/admin changes
   useEffect(() => {
-    if (!isAdmin) {
-      // This will trigger when admin logs out
-      // We need to force a new verification check
-      setLastCheckedLotteryId(null);
-    }
-  }, [isAdmin]);
+    checkExistingVerification();
+  }, [checkExistingVerification]);
 
   return (
     <PasswordVerificationContext.Provider
-      value={{ 
-        isVerified, 
-        checkVerification, 
-        setVerified: setIsVerified,
-        isCheckingVerification,
-        resetVerification
+      value={{
+        isVerified,
+        isLoading,
+        verifyPassword,
+        checkExistingVerification,
+        resetVerification,
       }}
     >
       {children}

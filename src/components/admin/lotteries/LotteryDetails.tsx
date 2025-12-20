@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Table, Lock, Unlock } from "lucide-react";
+import { Table, Lock, Unlock, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../table/DataTable";
 import { useToggleLottery } from "@/hooks/useToggleLottery";
 import { formatDateNorwegian } from "@/lib/date-utils";
+import { ResetLotteryPasswordDialog } from "./ResetLotteryPasswordDialog";
 
 interface Prize {
   id: string;
@@ -42,6 +43,7 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
     column: "created_at",
     direction: "desc",
   });
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const entriesPerPage = 5;
   const toggleLockMutation = useToggleLottery();
 
@@ -166,6 +168,13 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
             Status: {lottery.lottery_status?.is_locked ? "Locked" : "Open"}
           </span>
         </div>
+        <Button
+          onClick={() => setShowPasswordDialog(true)}
+          variant="outline"
+          className="text-blue-600"
+        >
+          <Key className="mr-2 h-4 w-4" /> Reset Password
+        </Button>
       </div>
 
       <div className="space-y-4">
@@ -203,6 +212,12 @@ export function LotteryDetails({ lottery }: { lottery: Lottery }) {
           onPageChange={setEntriesPage}
         />
       </div>
+
+      <ResetLotteryPasswordDialog
+        isOpen={showPasswordDialog}
+        onClose={() => setShowPasswordDialog(false)}
+        lotteryId={lottery.id}
+      />
     </div>
   );
 }

@@ -4,18 +4,13 @@ import { LiveDrawTab } from "@/components/LiveDrawTab";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { Spinner } from "@/components/ui/spinner";
-import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useEffect, useState } from "react";
 import { PasswordProtectedRoute } from "@/components/PasswordProtectedRoute";
 import { Wine, Ticket, ShieldCheck } from "lucide-react";
-import { usePasswordVerification } from "@/contexts/PasswordVerificationContext";
 
 const Index = () => {
-  const { isAdmin, isAuthenticated, isLoading: isAuthLoading } = useAuthStatus();
-  const { data: activeLottery, isLoading: isLotteryLoading } = useActiveLottery();
-  const { checkVerification } = usePasswordVerification();
+  const { isAdmin, isLoading: isAuthLoading } = useAuthStatus();
   const [tab, setTab] = useState<string>("lottery");
-  const [previousTab, setPreviousTab] = useState<string>("lottery");
 
   // Auto-select admin tab if user is admin
   useEffect(() => {
@@ -26,13 +21,7 @@ const Index = () => {
 
   // Handle tab changes
   const handleTabChange = (value: string) => {
-    setPreviousTab(tab);
     setTab(value);
-    
-    // If changing from admin tab to a protected tab, force verification check
-    if (previousTab === "admin" && (value === "lottery" || value === "live-draw")) {
-      checkVerification();
-    }
   };
 
   if (isAuthLoading) {
