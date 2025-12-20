@@ -1,10 +1,16 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://amwivjkqhskhzbauzwcj.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtd2l2amtxaHNraHpiYXV6d2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNDIxMDMsImV4cCI6MjA4MTgxODEwM30.XdZynCX9MkaP_N4ND9Cwno76zDrJagyD5DlAEcPQL54";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Please check your .env file."
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     storageKey: "wine-lottery-auth-token",
