@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
@@ -69,21 +69,21 @@ export function PasswordVerificationProvider({
     };
   }, []);
 
-  const checkVerification = async () => {
+  const checkVerification = useCallback(async () => {
     // If already checking, don't start another check
     if (isCheckingVerification) {
       return;
     }
-    
+
     setIsCheckingVerification(true);
-    
+
     // Create a timeout promise
     const timeoutPromise = new Promise<void>((_, reject) => {
       setTimeout(() => {
         reject(new Error("Verification check timed out"));
       }, VERIFICATION_TIMEOUT);
     });
-    
+
     try {
       // Race the verification check against the timeout
       await Promise.race([
@@ -100,11 +100,6 @@ export function PasswordVerificationProvider({
             return;
           }
 
-          // If we've already checked this lottery and user is verified, don't check again
-          if (lastCheckedLotteryId === activeLottery.id && isVerified) {
-            return;
-          }
-
           // Get user's IP address
           const response = await fetch('https://api.ipify.org?format=json');
           const { ip } = await response.json();
@@ -117,7 +112,7 @@ export function PasswordVerificationProvider({
             .maybeSingle();
 
           if (error) throw error;
-          
+
           // Update verification state and remember which lottery we checked
           setIsVerified(!!data);
           setLastCheckedLotteryId(activeLottery.id);
@@ -127,7 +122,7 @@ export function PasswordVerificationProvider({
     } catch (error) {
       console.error("Error checking verification:", error);
       setIsVerified(false);
-      
+
       // Only show toast for critical errors that prevent the app from functioning
       toast({
         title: "Verification Error",
@@ -137,7 +132,7 @@ export function PasswordVerificationProvider({
     } finally {
       setIsCheckingVerification(false);
     }
-  };
+  }, [isCheckingVerification, isAdmin, activeLottery, toast]);
 
   // Check verification when active lottery or admin status changes
   useEffect(() => {
@@ -146,14 +141,14 @@ export function PasswordVerificationProvider({
       setIsVerified(true);
       return;
     }
-    
+
     // Skip check if we've already verified this lottery
-    if (activeLottery && lastCheckedLotteryId === activeLottery.id && isVerified) {
+    if (activeLottery && lastCheckedLotteryId === activeLottery.id) {
       return;
     }
-    
+
     checkVerification();
-  }, [activeLottery, checkVerification, isVerified, lastCheckedLotteryId, isAdmin]);
+  }, [activeLottery, checkVerification, lastCheckedLotteryId, isAdmin]);
 
   // Reset verification when admin status changes from true to false (logout)
   useEffect(() => {

@@ -28,7 +28,7 @@ export function PasswordProtectedRoute({ children }: PasswordProtectedRouteProps
   useEffect(() => {
     // Update previous verification state
     setPreviousVerificationState(isVerified);
-  }, [isVerified, activeLottery, isAdmin, toast]);
+  }, [isVerified]);
 
   // Track admin state changes to detect logout
   useEffect(() => {
@@ -76,7 +76,7 @@ export function PasswordProtectedRoute({ children }: PasswordProtectedRouteProps
 
   const handleVerified = async () => {
     await checkVerification();
-    setShowModal(false);
+    // Modal will close automatically via useEffect when isVerified updates
   };
 
   // Show loading state while any verification or auth check is in progress
