@@ -14,12 +14,13 @@ export function useAuthStatus() {
     const checkAdminStatus = async (userId: string | undefined) => {
       if (!userId) {
         setIsAdmin(false);
+        setIsLoading(false);
         return;
       }
 
       try {
         const { data: adminStatus, error } = await supabase.rpc('check_is_admin_no_recursion');
-        
+
         if (error) {
           console.error("Admin check error:", error);
           setIsAdmin(false);
@@ -29,20 +30,21 @@ export function useAuthStatus() {
       } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     // Update authentication state based on session
     if (session) {
       setIsAuthenticated(true);
+      setIsLoading(true);
       checkAdminStatus(session.user.id);
     } else {
       setIsAuthenticated(false);
       setIsAdmin(false);
+      setIsLoading(false);
     }
-    
-    // Always set loading to false when authentication state is determined
-    setIsLoading(false);
   }, [session]);
 
   return { isAuthenticated, isAdmin, isLoading };
