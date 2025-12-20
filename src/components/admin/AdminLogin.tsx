@@ -1,10 +1,14 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const AdminLogin = () => {
   const { toast } = useToast();
@@ -48,7 +52,10 @@ export const AdminLogin = () => {
   const handleGoogleLogin = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
       });
 
       if (error) {
@@ -76,7 +83,7 @@ export const AdminLogin = () => {
       // Get the absolute URL for the reset password page
       const baseUrl = window.location.origin;
       const resetUrl = `${baseUrl}/reset-password`;
-      
+
       console.log("Sending password reset to email:", resetEmail);
       console.log("Using redirect URL:", resetUrl);
 
@@ -134,9 +141,9 @@ export const AdminLogin = () => {
             required
           />
           <div className="flex justify-end mt-2">
-            <Button 
-              type="button" 
-              variant="link" 
+            <Button
+              type="button"
+              variant="link"
               className="p-0 h-auto text-sm text-wine"
               onClick={() => setForgotPasswordOpen(true)}
             >
@@ -144,7 +151,12 @@ export const AdminLogin = () => {
             </Button>
           </div>
         </div>
-        <Button type="submit" variant="default" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          variant="default"
+          className="w-full"
+          disabled={isLoading}
+        >
           {isLoading ? "Logging in..." : "Login with Email"}
         </Button>
         <div className="relative my-4">
@@ -157,9 +169,9 @@ export const AdminLogin = () => {
             </span>
           </div>
         </div>
-        <Button 
-          type="button" 
-          variant="outline" 
+        <Button
+          type="button"
+          variant="outline"
           className="w-full"
           onClick={handleGoogleLogin}
         >
@@ -194,7 +206,8 @@ export const AdminLogin = () => {
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="py-2">
               <p className="text-sm text-gray-600 mb-4">
-                Enter your email address and we'll send you a link to reset your password.
+                Enter your email address and we'll send you a link to reset your
+                password.
               </p>
               <Input
                 type="email"
@@ -205,7 +218,11 @@ export const AdminLogin = () => {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setForgotPasswordOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setForgotPasswordOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isResetLoading}>
