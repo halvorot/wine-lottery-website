@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:24-slim AS build
+FROM node:26-slim AS build
 WORKDIR /app
 
 # Build arguments for Supabase config
