@@ -45,24 +45,24 @@ export const CountdownTimer = () => {
   }, [activeLottery]);
 
   return (
-    <div className="flex gap-4 text-4xl font-bold text-charcoal justify-center">
-      <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
+    <div className="grid grid-cols-3 gap-2 sm:gap-4 text-[clamp(1rem,7vw,2.25rem)] sm:text-4xl font-bold text-charcoal">
+      <div className="flex min-w-0 flex-col items-center">
+        <span className="w-full min-w-0 rounded-lg bg-cream px-1 py-3 text-center leading-none tracking-tight sm:min-w-[80px] sm:p-4">
           {String(timeLeft.hours).padStart(2, "0")}
         </span>
-        <span className="text-sm mt-2">Hours</span>
+        <span className="mt-2 text-sm">Hours</span>
       </div>
-      <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
+      <div className="flex min-w-0 flex-col items-center">
+        <span className="w-full min-w-0 rounded-lg bg-cream px-1 py-3 text-center leading-none tracking-tight sm:min-w-[80px] sm:p-4">
           {String(timeLeft.minutes).padStart(2, "0")}
         </span>
-        <span className="text-sm mt-2">Minutes</span>
+        <span className="mt-2 text-sm">Minutes</span>
       </div>
-      <div className="flex flex-col items-center">
-        <span className="bg-cream p-4 rounded-lg min-w-[80px] text-center">
+      <div className="flex min-w-0 flex-col items-center">
+        <span className="w-full min-w-0 rounded-lg bg-cream px-1 py-3 text-center leading-none tracking-tight sm:min-w-[80px] sm:p-4">
           {String(timeLeft.seconds).padStart(2, "0")}
         </span>
-        <span className="text-sm mt-2">Seconds</span>
+        <span className="mt-2 text-sm">Seconds</span>
       </div>
     </div>
   );
