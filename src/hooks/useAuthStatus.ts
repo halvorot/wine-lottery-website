@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function useAuthStatus() {
   const { session } = useAuth();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!session);
+  const isAuthenticated = Boolean(session);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -37,13 +37,15 @@ export function useAuthStatus() {
 
     // Update authentication state based on session
     if (session) {
-      setIsAuthenticated(true);
-      setIsLoading(true);
-      checkAdminStatus(session.user.id);
+      queueMicrotask(() => {
+        setIsLoading(true);
+        void checkAdminStatus(session.user.id);
+      });
     } else {
-      setIsAuthenticated(false);
-      setIsAdmin(false);
-      setIsLoading(false);
+      queueMicrotask(() => {
+        setIsAdmin(false);
+        setIsLoading(false);
+      });
     }
   }, [session]);
 

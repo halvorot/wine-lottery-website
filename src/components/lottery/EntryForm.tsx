@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LotteryEntry } from "./types";
@@ -6,50 +6,19 @@ import { LotteryEntry } from "./types";
 interface EntryFormProps {
   existingEntry: LotteryEntry | null;
   onSubmit: (data: { name: string; email: string; num_tickets: number }) => void;
-  onNewEntry: () => void;
   isSubmitting: boolean;
   handleEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function EntryForm({
-  existingEntry,
-  onSubmit,
-  onNewEntry,
-  isSubmitting,
-  handleEmailChange,
-}: EntryFormProps) {
+export function EntryForm({ existingEntry, onSubmit, isSubmitting, handleEmailChange }: EntryFormProps) {
   const [name, setName] = useState(existingEntry?.name || "");
   const [email, setEmail] = useState(existingEntry?.email || "");
   const [numTickets, setNumTickets] = useState(existingEntry?.num_tickets || 1);
-  const [hasChanges, setHasChanges] = useState(false);
-
-  // Update form fields when existingEntry changes
-  useEffect(() => {
-    if (existingEntry) {
-      setName(existingEntry.name);
-      setEmail(existingEntry.email);
-      setNumTickets(existingEntry.num_tickets);
-    }
-  }, [existingEntry]);
-
-  useEffect(() => {
-    if (existingEntry) {
-      const isChanged = 
-        name !== existingEntry.name ||
-        numTickets !== existingEntry.num_tickets;
-      setHasChanges(isChanged);
-    } else {
-      setHasChanges(true); // Always enabled for new entries
-    }
-  }, [name, numTickets, existingEntry]);
+  const hasChanges = !existingEntry || name !== existingEntry.name || numTickets !== existingEntry.num_tickets;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ 
-      name, 
-      email, 
-      num_tickets: numTickets
-    });
+    onSubmit({ name, email, num_tickets: numTickets });
   };
 
   const handleLocalEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +67,7 @@ export function EntryForm({
           min="0"
           max="100"
           value={numTickets}
-          onChange={(e) => setNumTickets(parseInt(e.target.value, 10))}
+          onChange={(e) => setNumTickets(Number(e.target.value))}
           required
           className="w-full"
         />
@@ -108,17 +77,15 @@ export function EntryForm({
         type="submit"
         disabled={isSubmitting || (existingEntry && !hasChanges) || (!existingEntry && numTickets === 0)}
         variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
-        className={existingEntry && numTickets === 0 
-          ? "w-full" 
-          : "w-full bg-wine hover:bg-wine-light text-white"}
+        className={existingEntry && numTickets === 0 ? "w-full" : "w-full bg-wine hover:bg-wine-light text-white"}
       >
         {isSubmitting
           ? "Submitting..."
           : existingEntry && numTickets === 0
-          ? "Delete Entry"
-          : existingEntry
-          ? "Update Entry"
-          : "Submit Entry"}
+            ? "Delete Entry"
+            : existingEntry
+              ? "Update Entry"
+              : "Submit Entry"}
       </Button>
     </form>
   );

@@ -32,32 +32,24 @@ export function PasswordVerificationModal({
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleVerify called");
-    console.log("verifyPassword function exists:", typeof verifyPassword);
-    console.log("password:", password);
-
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log("Calling verifyPassword...");
       const result = await verifyPassword(password);
-      console.log("verifyPassword returned:", result);
 
       if (result.success) {
-        console.log("Success!");
         toast({
           title: "Success",
           description: "Password verified successfully!",
         });
         setPassword("");
-        // Modal will close automatically when isVerified updates in context
+        // Modal closes automatically when isVerified updates in context.
       } else {
-        console.log("Verification failed:", result.error);
         setError(result.error || "Verification failed");
       }
-    } catch (err) {
-      console.error("Verification error caught:", err);
+    } catch (error) {
+      console.error("Password verification failed:", error);
       setError("Failed to verify password. Please try again.");
     } finally {
       setIsLoading(false);
@@ -117,16 +109,23 @@ export function PasswordVerificationModal({
         </DialogHeader>
         <form onSubmit={handleVerify} className="space-y-4">
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" role="alert">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription id="lottery-password-error">{error}</AlertDescription>
             </Alert>
           )}
+          <label htmlFor="lottery-password" className="sr-only">
+            Lottery password
+          </label>
           <Input
+            id="lottery-password"
             type="password"
             placeholder="Enter lottery password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            aria-describedby={error ? "lottery-password-error" : undefined}
+            aria-invalid={Boolean(error)}
             autoFocus
             disabled={isLoading}
           />
