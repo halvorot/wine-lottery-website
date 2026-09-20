@@ -3,11 +3,13 @@
 -- cannot read hashes or create verification rows directly.
 --
 -- This is password-gate state, NOT authorization. Both RPCs intentionally use
--- the client IP supplied by the managed Supabase/PostgREST gateway. Deploy only
--- where that gateway overwrites x-forwarded-for/x-real-ip with the connection
--- address; this migration cannot establish that trust boundary itself. Do not
--- expose PostgREST directly or rely on this IP-based state for admin access,
--- draws, or any other authorization decision.
+-- the client IP supplied by the managed Supabase/PostgREST gateway. Header trust
+-- is unverified in this repository and is deployment-blocking: do not deploy
+-- this migration as a security control until the gateway is verified to overwrite
+-- x-forwarded-for/x-real-ip with the connection address and direct PostgREST
+-- access is impossible. This migration cannot establish that trust boundary.
+-- Do not rely on this IP-based state for admin access, draws, or any other
+-- authorization decision.
 
 create extension if not exists pgcrypto with schema extensions;
 
@@ -145,12 +147,18 @@ grant execute on function public.has_lottery_password_verification(uuid) to anon
 grant execute on function public.verify_lottery_password(uuid, text) to anon, authenticated;
 
 -- These revokes do not enable RLS or alter existing RLS policies. They remove
--- direct browser reads of password hashes and direct browser verification-row
--- creation; password creation/reset keeps its existing INSERT/UPDATE path.
--- Before deployment, validate the project's existing authenticated-admin RLS
--- policies and grants can still create/update lottery_passwords, and explicitly
--- confirm anon/authenticated cannot SELECT either sensitive table. Do not add
--- unverified RLS policies here because the deployed policy/schema state is not
+-- every direct browser privilege from both sensitive tables. The app's existing
+-- authenticated admin creation/reset path still needs INSERT/UPDATE on
+-- lottery_passwords, so grant only those operations back; existing RLS policies
+-- must continue to restrict them to admins. password_verifications has no direct
+-- browser path: its SECURITY DEFINER RPC is the only intended writer.
+--
+-- Before deployment, validate the linked project's deployed schema, grants, and
+-- RLS policies. In particular, confirm authenticated admins can create/update
+-- lottery_passwords but anon/authenticated cannot directly SELECT it, and that
+-- anon/authenticated have no direct privileges on password_verifications. Do not
+-- add unverified RLS policies here because deployed policy/schema state is not
 -- represented in this repository.
-revoke select on table public.lottery_passwords from public, anon, authenticated;
-revoke select, insert on table public.password_verifications from public, anon, authenticated;
+revoke all privileges on table public.lottery_passwords from public, anon, authenticated;
+revoke all privileges on table public.password_verifications from public, anon, authenticated;
+grant insert, update on table public.lottery_passwords to authenticated;
