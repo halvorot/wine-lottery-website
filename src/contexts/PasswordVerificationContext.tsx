@@ -1,7 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveLottery } from "@/hooks/useActiveLottery";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PasswordVerificationContextType {
   isVerified: boolean;
@@ -20,15 +21,29 @@ const PasswordVerificationContext = createContext<PasswordVerificationContextTyp
 });
 
 export function PasswordVerificationProvider({ children }: { children: React.ReactNode }) {
-  const [isVerified, setIsVerified] = useState(false);
+  const [verifiedIdentity, setVerifiedIdentity] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { data: activeLottery } = useActiveLottery();
   const { isAdmin } = useAuthStatus();
+  const { session } = useAuth();
+  const verificationIdentity = `${session?.user.id ?? "anonymous"}:${isAdmin ? "admin" : "participant"}:${activeLottery?.id ?? "none"}`;
+  const identityRef = useRef(verificationIdentity);
+  const requestGenerationRef = useRef(0);
+  const isVerified = verifiedIdentity === verificationIdentity;
+
+  const isCurrentRequest = useCallback((generation: number, identity: string) => (
+    requestGenerationRef.current === generation && identityRef.current === identity
+  ), []);
 
   const checkExistingVerification = useCallback(async () => {
+    const requestIdentity = verificationIdentity;
+    const requestGeneration = requestGenerationRef.current;
+
     if (isAdmin || !activeLottery) {
-      setIsVerified(true);
-      setIsLoading(false);
+      if (isCurrentRequest(requestGeneration, requestIdentity)) {
+        setVerifiedIdentity(requestIdentity);
+        setIsLoading(false);
+      }
       return;
     }
 
@@ -40,17 +55,26 @@ export function PasswordVerificationProvider({ children }: { children: React.Rea
       });
 
       if (error) throw error;
-      setIsVerified(data === true);
+      if (isCurrentRequest(requestGeneration, requestIdentity)) {
+        setVerifiedIdentity(data === true ? requestIdentity : null);
+      }
     } catch (error) {
       console.error("Error checking password verification:", error);
-      setIsVerified(false);
+      if (isCurrentRequest(requestGeneration, requestIdentity)) {
+        setVerifiedIdentity(null);
+      }
     } finally {
-      setIsLoading(false);
+      if (isCurrentRequest(requestGeneration, requestIdentity)) {
+        setIsLoading(false);
+      }
     }
-  }, [activeLottery, isAdmin]);
+  }, [activeLottery, isAdmin, isCurrentRequest, verificationIdentity]);
 
   const verifyPassword = useCallback(
     async (password: string): Promise<{ success: boolean; error?: string }> => {
+      const requestIdentity = verificationIdentity;
+      const requestGeneration = requestGenerationRef.current;
+
       if (!activeLottery) {
         return { success: false, error: "No active lottery found" };
       }
@@ -68,25 +92,34 @@ export function PasswordVerificationProvider({ children }: { children: React.Rea
         if (error) throw error;
         if (data !== true) return { success: false, error: "Incorrect password" };
 
-        setIsVerified(true);
+        if (!isCurrentRequest(requestGeneration, requestIdentity)) {
+          return { success: false, error: "Lottery or account changed. Please try again." };
+        }
+
+        setVerifiedIdentity(requestIdentity);
         return { success: true };
       } catch (error) {
         console.error("Error verifying lottery password:", error);
         return { success: false, error: "Unable to verify the password. Please try again." };
       }
     },
-    [activeLottery],
+    [activeLottery, isCurrentRequest, verificationIdentity],
   );
 
   const resetVerification = useCallback(() => {
-    setIsVerified(false);
+    requestGenerationRef.current += 1;
+    setVerifiedIdentity(null);
   }, []);
 
   useEffect(() => {
+    identityRef.current = verificationIdentity;
+    requestGenerationRef.current += 1;
     queueMicrotask(() => {
+      setVerifiedIdentity(null);
+      setIsLoading(true);
       void checkExistingVerification();
     });
-  }, [checkExistingVerification]);
+  }, [checkExistingVerification, verificationIdentity]);
 
   return (
     <PasswordVerificationContext.Provider

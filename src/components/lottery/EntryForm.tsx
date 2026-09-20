@@ -13,11 +13,12 @@ interface EntryFormProps {
 export function EntryForm({ existingEntry, onSubmit, isSubmitting, handleEmailChange }: EntryFormProps) {
   const [name, setName] = useState(existingEntry?.name || "");
   const [email, setEmail] = useState(existingEntry?.email || "");
-  const [numTickets, setNumTickets] = useState(existingEntry?.num_tickets || 1);
+  const [numTickets, setNumTickets] = useState<number | "">(existingEntry?.num_tickets ?? 1);
   const hasChanges = !existingEntry || name !== existingEntry.name || numTickets !== existingEntry.num_tickets;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (numTickets === "") return;
     onSubmit({ name, email, num_tickets: numTickets });
   };
 
@@ -67,7 +68,7 @@ export function EntryForm({ existingEntry, onSubmit, isSubmitting, handleEmailCh
           min="0"
           max="100"
           value={numTickets}
-          onChange={(e) => setNumTickets(Number(e.target.value))}
+          onChange={(e) => setNumTickets(e.target.value === "" ? "" : Number(e.target.value))}
           required
           className="w-full"
         />
@@ -75,7 +76,7 @@ export function EntryForm({ existingEntry, onSubmit, isSubmitting, handleEmailCh
 
       <Button
         type="submit"
-        disabled={isSubmitting || (existingEntry && !hasChanges) || (!existingEntry && numTickets === 0)}
+        disabled={isSubmitting || numTickets === "" || (existingEntry && !hasChanges) || (!existingEntry && numTickets === 0)}
         variant={existingEntry && numTickets === 0 ? "destructive" : "default"}
         className={existingEntry && numTickets === 0 ? "w-full" : "w-full bg-wine hover:bg-wine-light text-white"}
       >

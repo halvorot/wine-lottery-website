@@ -1,6 +1,13 @@
 -- Keep lottery-password hashes and verification records server-side.
 -- The public browser client may execute the narrowly scoped RPCs below, but it
 -- cannot read hashes or create verification rows directly.
+--
+-- This is password-gate state, NOT authorization. Both RPCs intentionally use
+-- the client IP supplied by the managed Supabase/PostgREST gateway. Deploy only
+-- where that gateway overwrites x-forwarded-for/x-real-ip with the connection
+-- address; this migration cannot establish that trust boundary itself. Do not
+-- expose PostgREST directly or rely on this IP-based state for admin access,
+-- draws, or any other authorization decision.
 
 create extension if not exists pgcrypto with schema extensions;
 
@@ -17,7 +24,7 @@ declare
     nullif(current_setting('request.headers', true), ''),
     '{}'
   )::jsonb;
-  client_ip text := nullif(
+  forwarded_ip text := nullif(
     split_part(
       coalesce(
         request_headers ->> 'x-forwarded-for',
@@ -29,8 +36,26 @@ declare
     ),
     ''
   );
+  client_ip inet;
 begin
-  if target_lottery_id is null or client_ip is null then
+  if target_lottery_id is null or forwarded_ip is null then
+    return false;
+  end if;
+
+  begin
+    client_ip := forwarded_ip::inet;
+  exception when invalid_text_representation then
+    return false;
+  end;
+
+  if target_lottery_id is distinct from (
+    select id
+    from public.lotteries
+    where is_completed = false
+      and draw_date >= current_date
+    order by draw_date asc
+    limit 1
+  ) then
     return false;
   end if;
 
@@ -38,7 +63,7 @@ begin
     select 1
     from public.password_verifications
     where lottery_id = target_lottery_id
-      and user_ip = client_ip
+      and user_ip = client_ip::text
   );
 end;
 $$;
@@ -58,7 +83,7 @@ declare
     nullif(current_setting('request.headers', true), ''),
     '{}'
   )::jsonb;
-  client_ip text := nullif(
+  forwarded_ip text := nullif(
     split_part(
       coalesce(
         request_headers ->> 'x-forwarded-for',
@@ -70,11 +95,29 @@ declare
     ),
     ''
   );
+  client_ip inet;
 begin
   if target_lottery_id is null
     or submitted_password is null
     or length(trim(submitted_password)) = 0
-    or client_ip is null then
+    or forwarded_ip is null then
+    return false;
+  end if;
+
+  begin
+    client_ip := forwarded_ip::inet;
+  exception when invalid_text_representation then
+    return false;
+  end;
+
+  if target_lottery_id is distinct from (
+    select id
+    from public.lotteries
+    where is_completed = false
+      and draw_date >= current_date
+    order by draw_date asc
+    limit 1
+  ) then
     return false;
   end if;
 
@@ -89,7 +132,7 @@ begin
   end if;
 
   insert into public.password_verifications (lottery_id, user_ip)
-  values (target_lottery_id, client_ip)
+  values (target_lottery_id, client_ip::text)
   on conflict (lottery_id, user_ip) do nothing;
 
   return true;
@@ -101,8 +144,13 @@ revoke all on function public.verify_lottery_password(uuid, text) from public;
 grant execute on function public.has_lottery_password_verification(uuid) to anon, authenticated;
 grant execute on function public.verify_lottery_password(uuid, text) to anon, authenticated;
 
--- These tables contain credential material and verification state. Access them
--- only through the RPCs above; existing admin INSERT/UPDATE permissions are
--- intentionally left unchanged.
+-- These revokes do not enable RLS or alter existing RLS policies. They remove
+-- direct browser reads of password hashes and direct browser verification-row
+-- creation; password creation/reset keeps its existing INSERT/UPDATE path.
+-- Before deployment, validate the project's existing authenticated-admin RLS
+-- policies and grants can still create/update lottery_passwords, and explicitly
+-- confirm anon/authenticated cannot SELECT either sensitive table. Do not add
+-- unverified RLS policies here because the deployed policy/schema state is not
+-- represented in this repository.
 revoke select on table public.lottery_passwords from public, anon, authenticated;
 revoke select, insert on table public.password_verifications from public, anon, authenticated;
