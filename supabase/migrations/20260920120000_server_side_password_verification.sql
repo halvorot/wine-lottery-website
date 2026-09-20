@@ -146,19 +146,24 @@ revoke all on function public.verify_lottery_password(uuid, text) from public;
 grant execute on function public.has_lottery_password_verification(uuid) to anon, authenticated;
 grant execute on function public.verify_lottery_password(uuid, text) to anon, authenticated;
 
--- These revokes do not enable RLS or alter existing RLS policies. They remove
--- every direct browser privilege from both sensitive tables. The app's existing
--- authenticated admin creation/reset path still needs INSERT/UPDATE on
--- lottery_passwords, so grant only those operations back; existing RLS policies
--- must continue to restrict them to admins. password_verifications has no direct
--- browser path: its SECURITY DEFINER RPC is the only intended writer.
---
--- Before deployment, validate the linked project's deployed schema, grants, and
--- RLS policies. In particular, confirm authenticated admins can create/update
--- lottery_passwords but anon/authenticated cannot directly SELECT it, and that
--- anon/authenticated have no direct privileges on password_verifications. Do not
--- add unverified RLS policies here because deployed policy/schema state is not
--- represented in this repository.
+-- The deployed project has the permissive policies below. Remove only those
+-- confirmed public policies; leave the existing admin INSERT/UPDATE/DELETE
+-- policies on lottery_passwords in place. Direct table access to
+-- password_verifications is not part of any browser flow: the SECURITY DEFINER
+-- RPC above is its only intended writer.
+drop policy if exists "Anyone can read lottery passwords" on public.lottery_passwords;
+
+drop policy if exists "Anyone can create lottery verifications" on public.password_verifications;
+drop policy if exists "Anyone can insert new verifications" on public.password_verifications;
+drop policy if exists "Anyone can insert their own verification" on public.password_verifications;
+drop policy if exists "Anyone can read lottery verifications" on public.password_verifications;
+drop policy if exists "Users can read their own verifications" on public.password_verifications;
+
+-- Remove every direct browser privilege from both sensitive tables. The existing
+-- authenticated admin creation/reset path needs INSERT/UPDATE on
+-- lottery_passwords, so grant only those operations back; its retained admin RLS
+-- policies still control which authenticated callers may write. No direct
+-- password_verifications privilege is restored.
 revoke all privileges on table public.lottery_passwords from public, anon, authenticated;
 revoke all privileges on table public.password_verifications from public, anon, authenticated;
 grant insert, update on table public.lottery_passwords to authenticated;
