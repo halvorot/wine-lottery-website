@@ -1,7 +1,5 @@
-
 import { Trophy, Sparkles, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Badge } from "./ui/badge";
+import { useState } from "react";
 import { Button } from "./ui/button";
 
 interface WinnerAnnouncementProps {
@@ -12,24 +10,21 @@ interface WinnerAnnouncementProps {
 }
 
 export const WinnerAnnouncement = ({ winner }: WinnerAnnouncementProps) => {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    if (winner) {
-      setShow(true);
-    }
-  }, [winner]);
+  const [dismissedWinner, setDismissedWinner] = useState<string | null>(null);
+  const winnerKey = winner ? `${winner.name}:${winner.prizeName}` : null;
+  const show = winnerKey !== null && dismissedWinner !== winnerKey;
 
   if (!winner || !show) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center space-y-4 animate-scale-in relative">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="absolute right-2 top-2"
-          onClick={() => setShow(false)}
+          onClick={() => setDismissedWinner(winnerKey)}
+          aria-label="Dismiss winner announcement"
         >
           <X className="h-4 w-4" />
         </Button>

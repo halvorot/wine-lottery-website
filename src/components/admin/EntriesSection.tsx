@@ -37,16 +37,13 @@ export const EntriesSection = ({
 }: EntriesSectionProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
-  const [localEntries, setLocalEntries] = useState(entries);
+  const [deletedEntryIds, setDeletedEntryIds] = useState<Set<string>>(() => new Set());
+  const localEntries = entries.filter((entry) => !deletedEntryIds.has(entry.id));
   const entriesPerPage = 10;
   const totalEntries = localEntries.length;
   const totalPages = Math.ceil(totalEntries / entriesPerPage);
   const startIndex = (page - 1) * entriesPerPage;
   const endIndex = Math.min(startIndex + entriesPerPage, totalEntries);
-
-  useEffect(() => {
-    setLocalEntries(entries);
-  }, [entries]);
 
   useEffect(() => {
     const channel = supabase
@@ -59,9 +56,7 @@ export const EntriesSection = ({
           table: 'lottery_entries'
         },
         (payload) => {
-          setLocalEntries(current => 
-            current.filter(entry => entry.id !== payload.old.id)
-          );
+          setDeletedEntryIds((current) => new Set(current).add(payload.old.id));
         }
       )
       .subscribe();
