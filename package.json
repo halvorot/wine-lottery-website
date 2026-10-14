@@ -40,7 +40,7 @@
     "@radix-ui/react-toggle-group": "1.1.20",
     "@radix-ui/react-tooltip": "1.3.0",
     "@supabase/supabase-js": "2.117.3",
-    "@tanstack/react-query": "5.104.1",
+    "@tanstack/react-query": "5.104.2",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
@@ -52,7 +52,7 @@
     "react": "19.3.0",
     "react-day-picker": "10.0.2",
     "react-dom": "19.3.0",
-    "react-hook-form": "7.89.0",
+    "react-hook-form": "7.90.0",
     "react-resizable-panels": "4.14.4",
     "react-router-dom": "7.18.4",
     "recharts": "3.10.1",
@@ -60,7 +60,7 @@
     "tailwind-merge": "3.7.0",
     "tailwindcss-animate": "1.0.7",
     "vaul": "1.1.2",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
