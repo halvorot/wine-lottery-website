@@ -323,6 +323,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      has_lottery_password_verification: {
+        Args: {
+          target_lottery_id: string
+        }
+        Returns: boolean
+      }
       is_lottery_locked:
         | {
             Args: Record<PropertyKey, never>
@@ -334,6 +340,13 @@ export type Database = {
             }
             Returns: boolean
           }
+      verify_lottery_password: {
+        Args: {
+          submitted_password: string
+          target_lottery_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

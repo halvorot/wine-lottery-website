@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function LotteryEntryForm() {
-  const isAuthenticated = useAuthStatus();
+  const { isAuthenticated } = useAuthStatus();
   const { data: activeLottery } = useActiveLottery();
   
   const { data: lotteryStatus } = useQuery({
@@ -27,7 +27,6 @@ export function LotteryEntryForm() {
   const {
     existingEntry,
     handleEmailChange,
-    handleNewEntry,
     mutation,
   } = useEntryManagement();
 
@@ -63,9 +62,9 @@ export function LotteryEntryForm() {
           </div>
 
           <EntryForm
+            key={existingEntry?.id ?? "new-entry"}
             existingEntry={existingEntry}
             onSubmit={mutation.mutate}
-            onNewEntry={handleNewEntry}
             isSubmitting={mutation.isPending}
             handleEmailChange={handleEmailChange}
           />

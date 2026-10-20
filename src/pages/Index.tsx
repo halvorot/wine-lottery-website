@@ -15,7 +15,7 @@ const Index = () => {
   // Auto-select admin tab if user is admin
   useEffect(() => {
     if (isAdmin && !isAuthLoading) {
-      setTab("admin");
+      queueMicrotask(() => setTab("admin"));
     }
   }, [isAdmin, isAuthLoading]);
 
